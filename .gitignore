@@ -4,6 +4,7 @@
 !.env.example
 serviceAccountKey.json
 firebase-service-account*.json
+brain/test_bills/
 **/secrets.h
 **/wifi_config.h
 

@@ -6,6 +6,7 @@ import {
   AlertStatus,
   AppConfig,
   Bill,
+  BillEntry,
   RoomEvent,
   RoomState,
 } from "./types";
@@ -135,6 +136,30 @@ export function useBill(monthKey: string) {
 
 export function saveBill(monthKey: string, bill: Bill) {
   return set(ref(db, `/bills/${monthKey}`), bill);
+}
+
+// All bills, sorted oldest -> newest by month key (works because "YYYY-MM"
+// sorts correctly as a plain string).
+export function useBillHistory() {
+  const [bills, setBills] = useState<BillEntry[] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const r = ref(db, "/bills");
+    const unsub = onValue(r, (snap) => {
+      const val = snap.val() as Record<string, Bill> | null;
+      const list = val
+        ? Object.entries(val)
+            .map(([month, b]) => ({ month, ...b }))
+            .sort((a, b) => a.month.localeCompare(b.month))
+        : [];
+      setBills(list);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  return { bills, loading };
 }
 
 // --- Config (/config: watts + rate) ---

@@ -2,10 +2,19 @@ import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Badge } from "../components/Badge";
+import { BillHistoryChart } from "../components/BillHistoryChart";
 import { Card } from "../components/Card";
 import { RangeBarChart } from "../components/RangeBarChart";
+import { SlabRiskMeter } from "../components/SlabRiskMeter";
 import { StateView } from "../components/StateView";
-import { useBill, useConfig, useMonthReport, useRoomEvents, useSimulatedFlag } from "../lib/firebase";
+import {
+  useBill,
+  useBillHistory,
+  useConfig,
+  useMonthReport,
+  useRoomEvents,
+  useSimulatedFlag,
+} from "../lib/firebase";
 import { computeWasteReport } from "../lib/reportCalc";
 import { colors, spacing } from "../lib/theme";
 
@@ -21,8 +30,10 @@ export function ReportScreen() {
   const { config } = useConfig();
   const { report } = useMonthReport(monthKey);
   const simulated = useSimulatedFlag();
+  const { bills, loading: billsLoading } = useBillHistory();
 
   const waste = events ? computeWasteReport(events, config, bill) : null;
+  const latestBill = bills && bills.length > 0 ? bills[bills.length - 1] : null;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -31,6 +42,22 @@ export function ReportScreen() {
           <Text style={styles.title}>Report - {monthKey}</Text>
           {simulated && <Badge label="SIMULATED" color={colors.warning} />}
         </View>
+
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>Bill history</Text>
+          <StateView
+            loading={billsLoading}
+            empty={!bills || bills.length === 0}
+            emptyMessage="No bills yet. Import one in brain/import_bill.py or add it in Setup."
+          >
+            {bills && bills.length > 0 && (
+              <>
+                <BillHistoryChart bills={bills} />
+                {latestBill && <SlabRiskMeter month={latestBill.month} units={latestBill.units} />}
+              </>
+            )}
+          </StateView>
+        </Card>
 
         <StateView
           loading={eventsLoading}

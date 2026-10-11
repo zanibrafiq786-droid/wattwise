@@ -43,6 +43,10 @@ export interface Bill {
   amount_rs: number;
 }
 
+export interface BillEntry extends Bill {
+  month: string; // "YYYY-MM"
+}
+
 export interface ApplianceWatts {
   fan: number;
   light: number;

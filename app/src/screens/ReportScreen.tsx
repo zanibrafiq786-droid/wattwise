@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Badge } from "../components/Badge";
 import { BillHistoryChart } from "../components/BillHistoryChart";
+import { BillImportCard } from "../components/BillImportCard";
 import { Card } from "../components/Card";
 import { RangeBarChart } from "../components/RangeBarChart";
 import { SlabRiskMeter } from "../components/SlabRiskMeter";
@@ -47,6 +48,8 @@ export function ReportScreen() {
           <Text style={styles.title}>Report - {monthKey}</Text>
           {simulated && <Badge label="SIMULATED" color={colors.warning} />}
         </View>
+
+        <BillImportCard />
 
         <Card style={styles.card}>
           <Text style={styles.cardTitle}>Bill history</Text>

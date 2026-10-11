@@ -12,7 +12,7 @@ export interface RoomState {
   ldr: number;
   vib: number;
   rssi_var: number;
-  updated_at: number; // unix seconds
+  updated_at: number; // unix milliseconds (firmware writes Date.now()-style)
 }
 
 export interface RoomStateUser {
@@ -20,7 +20,7 @@ export interface RoomStateUser {
 }
 
 export interface RoomEvent {
-  ts: number;
+  ts: number; // unix milliseconds
   presence: Presence;
   light_on: boolean;
   fan_on: boolean;
@@ -30,7 +30,7 @@ export type AlertStatus = "new" | "acted" | "dismissed";
 
 export interface Alert {
   id: string;
-  ts: number;
+  ts: number; // unix milliseconds
   room: string;
   type: string;
   message: string;

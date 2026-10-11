@@ -7,16 +7,9 @@ import { Card } from "../components/Card";
 import { StateView } from "../components/StateView";
 import { setAlertStatus, useAlerts } from "../lib/firebase";
 import { ensureNotificationPermission, notifyNewAlert } from "../lib/notifications";
+import { timeAgo } from "../lib/time";
 import { colors, spacing } from "../lib/theme";
 import { Alert } from "../lib/types";
-
-function timeAgo(unixSeconds: number) {
-  const diff = Date.now() / 1000 - unixSeconds;
-  if (diff < 60) return `${Math.floor(diff)}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
-}
 
 export function AlertsScreen() {
   const { alerts, loading, error } = useAlerts();

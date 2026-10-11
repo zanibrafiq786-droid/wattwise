@@ -23,15 +23,17 @@ export interface WasteReport {
 // START of a state that lasts until the next event, so the duration of
 // event[i] is (event[i+1].ts - event[i].ts). The very last event's duration
 // is unknown (it's still ongoing), so it's ignored.
+// The firmware writes event.ts as unix MILLISECONDS, so divide by 1000 to
+// get seconds -- see lib/time.ts.
 function sumEmptyOnSeconds(events: RoomEvent[], key: "light_on" | "fan_on") {
   let seconds = 0;
   for (let i = 0; i < events.length - 1; i++) {
     const cur = events[i];
     const next = events[i + 1];
-    const duration = next.ts - cur.ts;
-    if (duration <= 0) continue;
+    const durationSeconds = (next.ts - cur.ts) / 1000;
+    if (durationSeconds <= 0) continue;
     if (cur.presence === "empty" && cur[key]) {
-      seconds += duration;
+      seconds += durationSeconds;
     }
   }
   return seconds;
@@ -80,7 +82,7 @@ export function computeWasteReport(
   const percentOfBillHigh = bill && bill.amount_rs > 0 ? (totalRsHigh / bill.amount_rs) * 100 : null;
 
   const daysCovered =
-    events.length > 1 ? (events[events.length - 1].ts - events[0].ts) / 86400 : 0;
+    events.length > 1 ? (events[events.length - 1].ts - events[0].ts) / 1000 / 86400 : 0;
 
   return { appliances, totalRsLow, totalRsHigh, percentOfBillLow, percentOfBillHigh, daysCovered };
 }

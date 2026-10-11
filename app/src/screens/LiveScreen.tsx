@@ -5,6 +5,7 @@ import { Badge } from "../components/Badge";
 import { Card } from "../components/Card";
 import { StateView } from "../components/StateView";
 import { setAcOn, useAcOn, useRoomState } from "../lib/firebase";
+import { timeAgo } from "../lib/time";
 import { colors, spacing } from "../lib/theme";
 import { Presence } from "../lib/types";
 
@@ -20,12 +21,9 @@ function presenceColor(p: Presence) {
   return colors.empty;
 }
 
-function timeAgo(unixSeconds: number) {
-  const diff = Date.now() / 1000 - unixSeconds;
-  if (diff < 60) return `${Math.floor(diff)}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  return `${Math.floor(diff / 3600)}h ago`;
-}
+// Just a visual scale for the gauge bar below, not a calibrated threshold --
+// rssi_var has no fixed max, this only makes the bar move in a useful range.
+const WIFI_VAR_SCALE = 5;
 
 export function LiveScreen() {
   const { state, loading, error } = useRoomState("room1");
@@ -96,6 +94,33 @@ export function LiveScreen() {
                   />
                 </View>
               </Card>
+
+              <Card style={styles.wifiCard}>
+                <Text style={styles.deviceLabel}>Wi-Fi sensing</Text>
+                <Text style={styles.muted}>
+                  The ESP32 watches how much the Wi-Fi signal from your router wobbles. More wobble
+                  usually means someone is moving in the room.
+                </Text>
+                <View style={styles.wifiReadingRow}>
+                  <Text style={styles.wifiValue}>{state.rssi_var.toFixed(2)}</Text>
+                  <Text style={styles.muted}>signal variance</Text>
+                </View>
+                <View style={styles.gaugeTrack}>
+                  <View
+                    style={[
+                      styles.gaugeFill,
+                      {
+                        width: `${Math.min(100, (state.rssi_var / WIFI_VAR_SCALE) * 100)}%`,
+                        backgroundColor: presenceColor(state.presence),
+                      },
+                    ]}
+                  />
+                </View>
+                <View style={styles.row}>
+                  <Reading label="Light sensor (raw)" value={String(state.ldr)} />
+                  <Reading label="Vibration" value={state.vib.toFixed(3)} />
+                </View>
+              </Card>
             </>
           )}
         </StateView>
@@ -128,4 +153,14 @@ const styles = StyleSheet.create({
   half: { flex: 1, gap: spacing.sm },
   deviceLabel: { color: colors.text, fontSize: 15, fontWeight: "600" },
   acRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  wifiCard: { gap: spacing.sm },
+  wifiReadingRow: { flexDirection: "row", alignItems: "baseline", gap: spacing.xs },
+  wifiValue: { color: colors.text, fontSize: 22, fontWeight: "700" },
+  gaugeTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.surfaceAlt,
+    overflow: "hidden",
+  },
+  gaugeFill: { height: "100%", borderRadius: 4 },
 });

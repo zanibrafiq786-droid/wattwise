@@ -6,16 +6,24 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
+// .env may define these keys as empty strings (not just leave them unset),
+// and "" ?? fallback keeps "" since empty string isn't null/undefined -- so
+// an empty-string env var silently wins over the fallback. Treat "" as unset.
+function envOr<T>(value: string | undefined, fallback: T): string | T {
+  return value && value.length > 0 ? value : fallback;
+}
+
 const firebaseConfig = {
-  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  databaseURL:
-    process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL ??
-    "https://wifi-324bd-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  apiKey: envOr(process.env.EXPO_PUBLIC_FIREBASE_API_KEY, undefined),
+  authDomain: envOr(process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN, undefined),
+  databaseURL: envOr(
+    process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
+    "https://wifi-324bd-default-rtdb.asia-southeast1.firebasedatabase.app"
+  ),
+  projectId: envOr(process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID, undefined),
+  storageBucket: envOr(process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET, undefined),
+  messagingSenderId: envOr(process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID, undefined),
+  appId: envOr(process.env.EXPO_PUBLIC_FIREBASE_APP_ID, undefined),
 };
 
 export const app = initializeApp(firebaseConfig);

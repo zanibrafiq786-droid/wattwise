@@ -58,7 +58,11 @@ export function SetupScreen() {
       setSavedMsg("Enter valid numbers for watts and rate.");
       return;
     }
-    await saveConfig({ watts: { fan, light, ac }, rate_rs_per_unit: r });
+    await saveConfig({
+      watts: { fan, light, ac },
+      rate_rs_per_unit: r,
+      empty_minutes_threshold: config.empty_minutes_threshold,
+    });
     setSavedMsg("Appliance settings saved.");
   }
 

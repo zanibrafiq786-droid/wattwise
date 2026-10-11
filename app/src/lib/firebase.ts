@@ -166,6 +166,11 @@ export function useBillHistory() {
 const DEFAULT_CONFIG: AppConfig = {
   watts: { fan: 75, light: 12, ac: 1500 },
   rate_rs_per_unit: 33,
+  // 1 minute so the "AC left on" alert is demo-able quickly; a real
+  // deployment would set this higher via /config.
+  empty_minutes_threshold: 1,
+  // Rough default until brain/calibrate.py writes a real calibrated value.
+  rssi_threshold: 1.5,
 };
 
 export function useConfig() {
@@ -180,6 +185,8 @@ export function useConfig() {
         setConfig({
           watts: { ...DEFAULT_CONFIG.watts, ...val.watts },
           rate_rs_per_unit: val.rate_rs_per_unit ?? DEFAULT_CONFIG.rate_rs_per_unit,
+          empty_minutes_threshold: val.empty_minutes_threshold ?? DEFAULT_CONFIG.empty_minutes_threshold,
+          rssi_threshold: val.rssi_threshold ?? DEFAULT_CONFIG.rssi_threshold,
         });
       }
       setLoading(false);
@@ -231,6 +238,26 @@ export function useSimulatedFlag() {
   }, []);
 
   return simulated;
+}
+
+// --- AC-left-on alert (app-side detection, no firmware change) ---
+export function createAcLeftOnAlert(room: string, rsPerHour: number) {
+  return push(ref(db, "/alerts"), {
+    ts: Date.now(),
+    room,
+    type: "ac_left_on",
+    status: "new",
+    message: `Room is empty but AC is on. Turn it off to save about Rs ${rsPerHour.toFixed(0)} per hour.`,
+    wasted_rs_est: rsPerHour,
+  });
+}
+
+export function logAcTurnedOff(room: string, alertId: string) {
+  return push(ref(db, `/${room}/ac_log`), {
+    ts: Date.now(),
+    action: "turned_off_via_alert",
+    alert_id: alertId,
+  });
 }
 
 export { push, ref as dbRef };

@@ -15,6 +15,7 @@ import {
   useRoomEvents,
   useSimulatedFlag,
 } from "../lib/firebase";
+import { computeForecast } from "../lib/forecastCalc";
 import { computeWasteReport } from "../lib/reportCalc";
 import { colors, spacing } from "../lib/theme";
 
@@ -32,8 +33,12 @@ export function ReportScreen() {
   const simulated = useSimulatedFlag();
   const { bills, loading: billsLoading } = useBillHistory();
 
-  const waste = events ? computeWasteReport(events, config, bill) : null;
   const latestBill = bills && bills.length > 0 ? bills[bills.length - 1] : null;
+  // Reconciled against the latest BILLED month, not the current calendar
+  // month -- there's no live meter, so "this month's bill" doesn't exist
+  // until it's actually imported.
+  const waste = events ? computeWasteReport(events, config, latestBill ?? bill) : null;
+  const forecasts = bills ? computeForecast(bills, config) : [];
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -68,7 +73,7 @@ export function ReportScreen() {
           {waste && (
             <>
               <Card style={styles.card}>
-                <Text style={styles.cardTitle}>Estimated waste this month</Text>
+                <Text style={styles.cardTitle}>Reconcile: waste vs. bill</Text>
                 <Text style={styles.subtle}>
                   Based on {waste.daysCovered.toFixed(1)} day(s) of logged sensor data. These are
                   estimates from presence + on/off state, not a real power meter -- treat them as
@@ -89,15 +94,16 @@ export function ReportScreen() {
                     Rs {waste.totalRsLow.toFixed(0)} - {waste.totalRsHigh.toFixed(0)}
                   </Text>
                 </View>
-                {waste.percentOfBillLow !== null && waste.percentOfBillHigh !== null && (
+                {waste.percentOfBillLow !== null && waste.percentOfBillHigh !== null && latestBill && (
                   <Text style={styles.subtle}>
                     That's about {waste.percentOfBillLow.toFixed(0)}%-{waste.percentOfBillHigh.toFixed(0)}% of
-                    your Rs {bill?.amount_rs.toFixed(0)} bill.
+                    your Rs {latestBill.amount_rs.toFixed(0)} bill for {latestBill.month}.
                   </Text>
                 )}
-                {!bill && (
+                {!latestBill && (
                   <Text style={styles.subtle}>
-                    Add this month's bill in Setup to see what share of it this waste represents.
+                    Import a bill (brain/import_bill.py) or add one in Setup to see what share of it
+                    this waste represents.
                   </Text>
                 )}
               </Card>
@@ -124,6 +130,35 @@ export function ReportScreen() {
             </>
           )}
         </StateView>
+
+        {forecasts.length > 0 && (
+          <Card style={styles.card}>
+            <Text style={styles.cardTitle}>Next 3 months (forecast)</Text>
+            <Text style={styles.subtle}>
+              Based on the same months last year, adjusted for this year's trend so far. Always a
+              range -- not a prediction you should treat as exact.
+            </Text>
+            {forecasts.map((f) =>
+              f.lastYearUnits === null ? (
+                <View key={f.month} style={styles.forecastRow}>
+                  <Text style={styles.forecastMonth}>{f.month}</Text>
+                  <Text style={styles.subtle}>No bill from {f.lastYearMonth} to forecast from.</Text>
+                </View>
+              ) : (
+                <View key={f.month} style={styles.forecastRow}>
+                  <View style={styles.forecastHeader}>
+                    <Text style={styles.forecastMonth}>{f.month}</Text>
+                    {f.flaggedHigh && <Badge label="Trending high" color={colors.danger} />}
+                  </View>
+                  <Text style={styles.subtle}>
+                    {f.unitsLow.toFixed(0)}-{f.unitsHigh.toFixed(0)} units (Rs {f.rsLow.toFixed(0)}-
+                    {f.rsHigh.toFixed(0)}), vs {f.lastYearUnits} units in {f.lastYearMonth}
+                  </Text>
+                </View>
+              )
+            )}
+          </Card>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -151,4 +186,7 @@ const styles = StyleSheet.create({
   planRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-start" },
   planIndex: { color: colors.primary, fontWeight: "800", width: 20 },
   planText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
+  forecastRow: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
+  forecastHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  forecastMonth: { color: colors.text, fontWeight: "700", fontSize: 14 },
 });

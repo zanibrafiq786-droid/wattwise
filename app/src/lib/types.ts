@@ -56,4 +56,14 @@ export interface ApplianceWatts {
 export interface AppConfig {
   watts: ApplianceWatts;
   rate_rs_per_unit: number;
+  empty_minutes_threshold: number;
+  // Calibrated RSSI-variance threshold from brain/calibrate.py, if it's been
+  // run. Falls back to a rough default when absent -- see useConfig().
+  rssi_threshold?: number;
+}
+
+export interface AcLogEntry {
+  ts: number; // unix milliseconds
+  action: "turned_off_via_alert";
+  alert_id: string;
 }

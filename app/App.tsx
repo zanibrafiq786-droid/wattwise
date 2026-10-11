@@ -7,22 +7,31 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AlertsScreen } from "./src/screens/AlertsScreen";
 import { LiveScreen } from "./src/screens/LiveScreen";
 import { ReportScreen } from "./src/screens/ReportScreen";
+import { RoomScreen } from "./src/screens/RoomScreen";
 import { SetupScreen } from "./src/screens/SetupScreen";
+import { AcAlertBanner } from "./src/components/AcAlertBanner";
 import { colors } from "./src/lib/theme";
+import { useAcLeftOnWatcher } from "./src/lib/useAcLeftOnWatcher";
 
 const Tab = createBottomTabNavigator();
 
 const ICONS: Record<string, string> = {
   Live: "⚡",
+  Room: "📡",
   Alerts: "🔔",
   Report: "📊",
   Setup: "⚙",
 };
 
 export default function App() {
+  // Mounted once here (not per-screen) so the empty+AC-on timer keeps
+  // running no matter which tab is open.
+  useAcLeftOnWatcher("room1");
+
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
+      <AcAlertBanner room="room1" />
       <NavigationContainer
         theme={{
           dark: true,
@@ -52,6 +61,7 @@ export default function App() {
           })}
         >
           <Tab.Screen name="Live" component={LiveScreen} />
+          <Tab.Screen name="Room" component={RoomScreen} />
           <Tab.Screen name="Alerts" component={AlertsScreen} />
           <Tab.Screen name="Report" component={ReportScreen} />
           <Tab.Screen name="Setup" component={SetupScreen} />

@@ -1,0 +1,8 @@
+pyserial
+firebase-admin
+scikit-learn
+numpy
+pandas
+joblib
+python-dotenv
+anthropic

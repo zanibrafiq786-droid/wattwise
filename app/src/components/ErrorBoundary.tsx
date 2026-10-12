@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, fonts, spacing } from "../lib/theme";
+import { colors, fonts, spacing, radius } from "../lib/theme";
 
 // There is no "page" concept in a mobile app, so no custom 404 -- but a crash
 // in one screen otherwise takes down the whole app to a blank/frozen screen,
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: spacing.sm,
     backgroundColor: colors.primary,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     paddingVertical: 14,
     paddingHorizontal: 28,
   },

@@ -401,3 +401,29 @@ export function logAcTurnedOff(room: string, alertId: string) {
 }
 
 export { push, ref as dbRef };
+
+// --- Profile photo (/users/{uid}/profile/photo) ---
+// Stored as a small JPEG data URI (resized to 256 px, ~15-30 KB) straight in
+// the Realtime Database, because Firebase Storage needs the paid plan.
+export function useProfilePhoto() {
+  const { user } = useAuth();
+  const uid = user?.uid ?? null;
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!uid) {
+      setPhoto(null);
+      return;
+    }
+    return onValue(ref(db, userPath(uid, "profile/photo")), (snap) => {
+      setPhoto(snap.exists() ? String(snap.val()) : null);
+    });
+  }, [uid]);
+
+  return photo;
+}
+
+// Pass null to remove the photo (back to initials).
+export async function saveProfilePhoto(dataUri: string | null) {
+  await set(ref(db, userPath(currentUid(), "profile/photo")), dataUri);
+}

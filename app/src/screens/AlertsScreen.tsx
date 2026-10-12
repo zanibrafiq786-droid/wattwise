@@ -1,5 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Badge } from "../components/Badge";
@@ -10,7 +10,6 @@ import { StateView } from "../components/StateView";
 import { StatusMessage } from "../components/StatusMessage";
 import { setAlertStatus, useAlerts } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
-import { ensureNotificationPermission, notifyNewAlert } from "../lib/notifications";
 import { timeAgo } from "../lib/time";
 import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
@@ -18,29 +17,13 @@ import { Alert } from "../lib/types";
 
 export function AlertsScreen() {
   const { alerts, loading, error } = useAlerts();
-  const seenIds = useRef<Set<string> | null>(null);
   const { t } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    ensureNotificationPermission();
-  }, []);
-
-  useEffect(() => {
-    if (!alerts) return;
-    if (seenIds.current === null) {
-      // First load: remember what's already there, don't notify for old alerts.
-      seenIds.current = new Set(alerts.map((a) => a.id));
-      return;
-    }
-    const fresh = alerts.filter((a) => !seenIds.current!.has(a.id));
-    for (const a of fresh) {
-      notifyNewAlert(a.message);
-      seenIds.current.add(a.id);
-    }
-  }, [alerts]);
+  // Phone notifications for new alerts are handled app-wide in
+  // useAlertNotifications (mounted in MainTabs), not here.
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>

@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthNavigator } from "./src/screens/auth/AuthNavigator";
 import { RootNavigator as AppRootNavigator } from "./src/screens/RootNavigator";
 import { ErrorBoundary } from "./src/components/ErrorBoundary";
+import { SplashIntro } from "./src/components/SplashIntro";
 import { AuthProvider, useAuth } from "./src/lib/authContext";
 import { DataSourceProvider } from "./src/lib/dataSourceContext";
 import { I18nProvider } from "./src/lib/i18n";
@@ -75,6 +76,8 @@ function ThemedNavigation() {
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  // The logo animation plays over the app once per launch, then removes itself.
+  const [introDone, setIntroDone] = useState(false);
 
   useEffect(() => {
     Font.loadAsync({
@@ -91,9 +94,9 @@ export default function App() {
 
   if (!fontsLoaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
+      // Plain background (same as the intro) so the short font load flows
+      // straight into the logo animation without a spinner flash.
+      <View style={{ flex: 1, backgroundColor: colors.bg }} />
     );
   }
 
@@ -105,6 +108,7 @@ export default function App() {
             <AuthProvider>
               <DataSourceProvider>
                 <ThemedNavigation />
+                {!introDone && <SplashIntro onDone={() => setIntroDone(true)} />}
               </DataSourceProvider>
             </AuthProvider>
           </I18nProvider>

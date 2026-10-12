@@ -11,7 +11,7 @@ import { useAuth } from "../lib/authContext";
 import { deleteAppliance, saveAppliance, saveBill, saveConfig, useBill, useConfig } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
 import { currentMonthKey, lastCompletedMonth, monthName, shiftMonth } from "../lib/months";
-import { Colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing, radius } from "../lib/theme";
 import { useThemeMode } from "../lib/themeContext";
 import { HouseAppliance } from "../lib/types";
 
@@ -319,7 +319,7 @@ function makeStyles(colors: Colors) {
       alignItems: "center",
       justifyContent: "space-between",
       backgroundColor: colors.surfaceAlt,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       padding: 4,
     },
     monthArrow: {
@@ -340,7 +340,7 @@ function makeStyles(colors: Colors) {
       gap: 4,
       borderWidth: 1.5,
       borderColor: colors.danger + "66",
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 7,
       paddingHorizontal: 12,
     },
@@ -367,7 +367,7 @@ function makeStyles(colors: Colors) {
       gap: 5,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 6,
       paddingHorizontal: 10,
     },

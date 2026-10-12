@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
-import { Colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing, radius } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 import { Icon, IconName } from "./Icon";
 
@@ -46,7 +46,7 @@ function makeStyles(colors: Colors) {
       gap: spacing.xs,
       paddingVertical: spacing.sm + 7,
       paddingHorizontal: spacing.md + 4,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       alignItems: "center",
       justifyContent: "center",
     },

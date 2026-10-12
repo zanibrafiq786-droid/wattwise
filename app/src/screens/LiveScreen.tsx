@@ -8,7 +8,8 @@ import { Icon } from "../components/Icon";
 import { HeroDevice, RoomHeroCard } from "../components/RoomHeroCard";
 import { RoomLiveView } from "../components/RoomLiveView";
 import { RoomSheet } from "../components/RoomSheet";
-import { Sparkle } from "../components/Sparkle";
+import { Floating } from "../components/Floating";
+import { GlassOrb } from "../components/GlassOrb";
 import { StateView } from "../components/StateView";
 import { useAuth } from "../lib/authContext";
 import {
@@ -72,6 +73,8 @@ export function LiveScreen() {
   const [acBusy, setAcBusy] = useState(false);
   const [acError, setAcError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // The Wi-Fi motion view stays closed until the user asks for it.
+  const [motionOpen, setMotionOpen] = useState(false);
 
   const newAlertCount = alerts?.filter((a) => a.status === "new").length ?? 0;
   const threshold = config.rssi_threshold ?? 0.6;
@@ -121,9 +124,11 @@ export function LiveScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <Pressable style={styles.chatFab} onPress={() => navigation.navigate("Chat")}>
-        <Sparkle size={28} id="fabSparkle" />
-      </Pressable>
+      <Floating style={styles.chatFab}>
+        <Pressable onPress={() => navigation.navigate("Chat")} hitSlop={6}>
+          <GlassOrb size={62} id="fabOrb" />
+        </Pressable>
+      </Floating>
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.topRow}>
@@ -174,7 +179,26 @@ export function LiveScreen() {
                 onPress={() => setSheetOpen(true)}
               />
 
-              <RoomLiveView state={state} presence={smart.presence} acOn={acOn} threshold={threshold} />
+              {motionOpen ? (
+                <View style={{ gap: spacing.sm }}>
+                  <RoomLiveView state={state} presence={smart.presence} acOn={acOn} threshold={threshold} />
+                  <Pressable style={styles.motionClose} onPress={() => setMotionOpen(false)}>
+                    <Icon name="x" size={14} color={colors.textMuted} />
+                    <Text style={styles.motionCloseText}>{t("wifiMotionHide")}</Text>
+                  </Pressable>
+                </View>
+              ) : (
+                <Pressable style={styles.motionButton} onPress={() => setMotionOpen(true)}>
+                  <View style={styles.motionIcon}>
+                    <Icon name="play" size={18} color={colors.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.motionTitle}>{t("wifiMotionShow")}</Text>
+                    <Text style={styles.motionSub}>{t("wifiMotionShowSub")}</Text>
+                  </View>
+                  <Icon name="chev" size={18} color={colors.textMuted} />
+                </Pressable>
+              )}
 
               <Card style={styles.dialCard}>
                 <View style={styles.statsRow}>
@@ -307,7 +331,7 @@ function makeStyles(colors: Colors) {
       alignItems: "center",
       gap: 6,
       backgroundColor: colors.surface,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 9,
       paddingHorizontal: 14,
     },
@@ -338,21 +362,30 @@ function makeStyles(colors: Colors) {
       position: "absolute",
       right: spacing.md,
       bottom: spacing.lg,
-      width: 58,
-      height: 58,
-      borderRadius: 29,
-      // Contrasting disc (dark on Cream, light on Espresso) so the warm
-      // gradient sparkle reads clearly in both themes.
-      backgroundColor: colors.text,
+      zIndex: 50,
+      elevation: 50,
+    },
+    motionButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: radius.lg,
+      padding: spacing.md,
+    },
+    motionIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       alignItems: "center",
       justifyContent: "center",
-      zIndex: 50,
-      shadowColor: "#000",
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: 4 },
-      elevation: 6,
     },
+    motionTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.bodySemiBold },
+    motionSub: { color: colors.textMuted, fontSize: 12 },
+    motionClose: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "center", padding: spacing.xs },
+    motionCloseText: { color: colors.textMuted, fontSize: 13 },
     dialCard: { gap: spacing.md, alignItems: "stretch" },
     statsRow: { flexDirection: "row", alignItems: "center" },
     stat: { flex: 1, alignItems: "center", gap: 2 },
@@ -366,7 +399,7 @@ function makeStyles(colors: Colors) {
       gap: spacing.sm,
       borderWidth: 1.5,
       borderColor: colors.border,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 12,
     },
     devicesButtonText: { color: colors.text, fontSize: 14, fontFamily: fonts.bodySemiBold },
@@ -403,7 +436,7 @@ function makeStyles(colors: Colors) {
     reportButton: {
       borderWidth: 1.5,
       borderColor: colors.border,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 8,
       paddingHorizontal: 16,
     },

@@ -57,6 +57,9 @@ export const radius = {
   sm: 12,
   md: 18,
   lg: 28,
+  // Buttons, chips, inputs, tabs: one modest radius for every size, so a
+  // big pill and a small pill have the same corners (not fully round).
+  pill: 10,
 };
 
 export const fonts = {

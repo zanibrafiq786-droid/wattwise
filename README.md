@@ -49,9 +49,11 @@ your own Wi-Fi credentials, flash an ESP32 wired per `CLAUDE.md` section 3.
 
 Create a free Realtime Database project at the Firebase console. The app needs the web app
 config (`app/.env`); the brain workers need a service account JSON (`brain/serviceAccountKey.json`,
-download from Project Settings > Service Accounts) and the database URL (`brain/.env`). **Rules
-are left in test mode for the hackathon -- this is insecure and must be tightened or removed
-before any real use.**
+download from Project Settings > Service Accounts) and the database URL (`brain/.env`).
+Paste `database.rules.json` into Realtime Database > Rules: only signed-in users can read or
+write (the Python brain uses the service account, which bypasses rules). This is a minimum,
+not full per-user security -- any signed-in account can still read other paths. Tighten to
+per-user rules before real use.
 
 ## What's real vs. simulated vs. estimated
 

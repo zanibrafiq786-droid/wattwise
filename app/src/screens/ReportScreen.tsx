@@ -8,7 +8,8 @@ import { Card } from "../components/Card";
 import { Expandable } from "../components/Expandable";
 import { MonthBars } from "../components/MonthBars";
 import { MonthDial } from "../components/MonthDial";
-import { RangeBarChart } from "../components/RangeBarChart";
+import { PlanChecklist } from "../components/PlanChecklist";
+import { WasteBreakdown } from "../components/WasteBreakdown";
 import { Segmented } from "../components/Segmented";
 import { StateView } from "../components/StateView";
 import { WhyBillHighCard } from "../components/WhyBillHighCard";
@@ -27,6 +28,7 @@ import {
   useRoomEvents,
   useSimulatedFlag,
 } from "../lib/firebase";
+import { pickPlanStep, pickReportText } from "../lib/bilingual";
 import { computeForecast } from "../lib/forecastCalc";
 import { useI18n } from "../lib/i18n";
 import { lastCompletedMonth, monthName, shiftMonth } from "../lib/months";
@@ -61,7 +63,7 @@ export function ReportScreen() {
   const billsAreSimulated = useSimulatedFlag();
   const simulated = source === "simulated" || billsAreSimulated;
   const { bills, loading: billsLoading } = useBillHistory();
-  const { t } = useI18n();
+  const { t, language } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
 
@@ -188,56 +190,43 @@ export function ReportScreen() {
         <Expandable title={t("aiExplanationTitle")} subtitle={t("aiExplanationSub")} icon="chip">
           {waste && waste.daysCovered > 0 ? (
             <>
-              <Text style={styles.sectionLabel}>{t("reconcileTitle")}</Text>
-              <Text style={styles.subtle}>
-                Based on {waste.daysCovered.toFixed(1)} day(s) of logged sensor data. These are estimates from
-                presence + on/off state, not a real power meter -- ranges, not exact numbers.
-              </Text>
-              <RangeBarChart
-                items={waste.appliances.map((a) => ({
-                  label: a.label,
-                  low: a.rsLow,
-                  high: a.rsHigh,
-                  unit: "Rs",
-                  color: a.key === "fan" ? colors.primary : colors.warning,
-                }))}
+              <Text style={styles.sectionLabel}>{t("wasteWhereTitle")}</Text>
+              <WasteBreakdown
+                items={waste.appliances}
+                totalLow={waste.totalRsLow}
+                totalHigh={waste.totalRsHigh}
+                billNote={
+                  waste.percentOfBillLow !== null && waste.percentOfBillHigh !== null && reconcileBill
+                    ? t("wasteOfBill", {
+                        low: waste.percentOfBillLow.toFixed(0),
+                        high: waste.percentOfBillHigh.toFixed(0),
+                        amount: (reconcileBill.amount_rs ?? 0).toFixed(0),
+                        month: monthName(reconcileBill.month),
+                      })
+                    : null
+                }
               />
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Total estimated waste</Text>
-                <Text style={styles.totalValue}>
-                  Rs {waste.totalRsLow.toFixed(0)} - {waste.totalRsHigh.toFixed(0)}
-                </Text>
-              </View>
-              {waste.percentOfBillLow !== null && waste.percentOfBillHigh !== null && reconcileBill && (
-                <Text style={styles.subtle}>
-                  That's about {waste.percentOfBillLow.toFixed(0)}%-{waste.percentOfBillHigh.toFixed(0)}% of your Rs{" "}
-                  {(reconcileBill.amount_rs ?? 0).toFixed(0)} bill for {reconcileBill.month}.
-                </Text>
-              )}
+              <Text style={styles.subtle}>{t("wasteBasedOn", { days: waste.daysCovered.toFixed(1) })}</Text>
             </>
           ) : (
-            <Text style={styles.subtle}>
-              Not enough logged data yet to estimate waste. Keep the sensor running for a few days.
-            </Text>
+            <Text style={styles.subtle}>{t("wasteNotEnough")}</Text>
           )}
 
           <View style={styles.divider} />
-          <Text style={styles.sectionLabel}>{t("aiExplanationTitle")}</Text>
           {report?.text ? (
             <>
-              <Text style={styles.reportText}>{report.text}</Text>
-              {report.plan_steps?.map((step, i) => (
-                <View key={i} style={styles.planRow}>
-                  <Text style={styles.planIndex}>{i + 1}</Text>
-                  <Text style={styles.planText}>{step}</Text>
-                </View>
-              ))}
+              <Text style={styles.sectionLabel}>{t("aiWhatHappened")}</Text>
+              <Text style={styles.reportText}>{pickReportText(report.text, language)}</Text>
+              {report.plan_steps && report.plan_steps.length > 0 && (
+                <>
+                  <Text style={[styles.sectionLabel, { marginTop: spacing.sm }]}>{t("planTitle")}</Text>
+                  <PlanChecklist steps={report.plan_steps.map((s) => pickPlanStep(s, language))} />
+                  <Text style={styles.subtle}>{t("planNote")}</Text>
+                </>
+              )}
             </>
           ) : (
-            <Text style={styles.subtle}>
-              No AI report yet for this month. Run the month-end report job (brain/report.py) to generate an
-              explanation and a step-by-step plan.
-            </Text>
+            <Text style={styles.subtle}>{t("aiNoReport")}</Text>
           )}
         </Expandable>
 
@@ -314,20 +303,7 @@ function makeStyles(colors: Colors) {
     sectionLabel: { color: colors.text, fontSize: 14, fontFamily: fonts.bodySemiBold },
     subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
     divider: { height: 1, backgroundColor: colors.border, marginVertical: spacing.xs },
-    totalRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      borderTopWidth: 1,
-      borderTopColor: colors.border,
-      paddingTop: spacing.sm,
-      marginTop: spacing.xs,
-    },
-    totalLabel: { color: colors.text, fontWeight: "600" },
-    totalValue: { color: colors.text, fontWeight: "800" },
-    reportText: { color: colors.text, fontSize: 14, lineHeight: 20 },
-    planRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-start" },
-    planIndex: { color: colors.primary, fontWeight: "800", width: 20 },
-    planText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
+    reportText: { color: colors.text, fontSize: 14, lineHeight: 21 },
     forecastRow: { gap: 2, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
     forecastHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
     forecastMonth: { color: colors.text, fontWeight: "700", fontSize: 14 },

@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Colors, fonts } from "../lib/theme";
+import { Colors, fonts, radius } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 import { Icon, IconName } from "./Icon";
 
@@ -33,8 +33,8 @@ export function Segmented<K extends string>({
 
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
-    wrap: { flexDirection: "row", backgroundColor: colors.surfaceAlt, borderRadius: 999, padding: 3, alignSelf: "flex-start" },
-    item: { flexDirection: "row", alignItems: "center", gap: 5, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 999 },
+    wrap: { flexDirection: "row", backgroundColor: colors.surfaceAlt, borderRadius: radius.pill, padding: 3, alignSelf: "flex-start" },
+    item: { flexDirection: "row", alignItems: "center", gap: 5, paddingVertical: 6, paddingHorizontal: 12, borderRadius: radius.pill - 3 },
     itemActive: { backgroundColor: colors.text },
     text: { color: colors.textMuted, fontSize: 12, fontFamily: fonts.bodySemiBold },
     textActive: { color: colors.bg },

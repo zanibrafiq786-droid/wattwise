@@ -48,7 +48,6 @@ function makeStyles(colors: Colors) {
       width: 38,
       height: 38,
       borderRadius: 19,
-      backgroundColor: colors.primary + "22",
       alignItems: "center",
       justifyContent: "center",
     },

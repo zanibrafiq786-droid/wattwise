@@ -1,5 +1,6 @@
 import React from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Image, Pressable, StyleSheet, Text } from "react-native";
+import { useProfilePhoto } from "../lib/firebase";
 import { Colors, fonts } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 
@@ -13,7 +14,8 @@ function initialsFor(name: string | null, email: string | null | undefined): str
 }
 
 // WattWise spec: 46px espresso circle in the top bar, 88px on the Account
-// page, initials until a photo is added.
+// page. Shows the user's profile photo if they've added one (Profile page),
+// otherwise their initials.
 export function Avatar({
   name,
   email,
@@ -27,13 +29,18 @@ export function Avatar({
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
+  const photo = useProfilePhoto();
   return (
     <Pressable
       style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}
       onPress={onPress}
       disabled={!onPress}
     >
-      <Text style={[styles.initials, { fontSize: size * 0.34 }]}>{initialsFor(name, email)}</Text>
+      {photo ? (
+        <Image source={{ uri: photo }} style={{ width: size, height: size, borderRadius: size / 2 }} />
+      ) : (
+        <Text style={[styles.initials, { fontSize: size * 0.34 }]}>{initialsFor(name, email)}</Text>
+      )}
     </Pressable>
   );
 }
@@ -44,6 +51,7 @@ function makeStyles(colors: Colors) {
       backgroundColor: colors.text,
       alignItems: "center",
       justifyContent: "center",
+      overflow: "hidden",
     },
     initials: {
       color: colors.bg,

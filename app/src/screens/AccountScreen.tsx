@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Avatar } from "../components/Avatar";
 import { Badge } from "../components/Badge";
@@ -12,6 +12,8 @@ import { StatusMessage } from "../components/StatusMessage";
 import { TextField } from "../components/TextField";
 import { useAuth } from "../lib/authContext";
 import { useDataSource } from "../lib/dataSourceContext";
+import { saveProfilePhoto, useProfilePhoto } from "../lib/firebase";
+import { pickProfilePhoto } from "../lib/pickProfilePhoto";
 import { useI18n } from "../lib/i18n";
 import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
@@ -30,6 +32,32 @@ export function AccountScreen({ navigation }: Props) {
   const styles = makeStyles(colors);
   const [name, setName] = useState(displayName ?? "");
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const photo = useProfilePhoto();
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // Pick a photo from the gallery, shrink it, save it to this account.
+  async function handleChangePhoto() {
+    setPhotoError(null);
+    setPhotoBusy(true);
+    try {
+      const dataUri = await pickProfilePhoto();
+      if (dataUri) await saveProfilePhoto(dataUri);
+    } catch (err) {
+      setPhotoError(err instanceof Error && err.message === "permission" ? t("photoPermission") : t("saveFailed"));
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setPhotoError(null);
+    try {
+      await saveProfilePhoto(null);
+    } catch {
+      setPhotoError(t("saveFailed"));
+    }
+  }
 
   async function handleSave() {
     try {
@@ -50,12 +78,30 @@ export function AccountScreen({ navigation }: Props) {
         <Text style={styles.title}>{t("profile")}</Text>
 
         <Card style={styles.profCard}>
-          <Avatar name={displayName} email={user?.email} size={72} />
+          <Pressable onPress={handleChangePhoto} disabled={photoBusy}>
+            <Avatar name={displayName} email={user?.email} size={72} />
+            <View style={styles.cameraBadge}>
+              <Icon name="camera" size={13} color="#FFFFFF" />
+            </View>
+          </Pressable>
           <View style={styles.grow}>
             <Text style={styles.name}>{displayName || user?.email}</Text>
             <Text style={styles.email}>{user?.email}</Text>
+            <View style={styles.photoLinks}>
+              <Pressable onPress={handleChangePhoto} disabled={photoBusy} hitSlop={6}>
+                <Text style={styles.photoLink}>
+                  {photoBusy ? t("photoSaving") : photo ? t("photoChange") : t("photoAdd")}
+                </Text>
+              </Pressable>
+              {photo && !photoBusy && (
+                <Pressable onPress={handleRemovePhoto} hitSlop={6}>
+                  <Text style={[styles.photoLink, { color: colors.textMuted }]}>{t("photoRemove")}</Text>
+                </Pressable>
+              )}
+            </View>
           </View>
         </Card>
+        <StatusMessage type="error" message={photoError} />
 
         <Section icon="sliders" title={t("yourDetails")} colors={colors} />
         <Card style={styles.card}>
@@ -119,6 +165,21 @@ function makeStyles(colors: Colors) {
     title: { color: colors.text, fontSize: 34, fontFamily: fonts.headingMedium },
     profCard: { flexDirection: "row", alignItems: "center", gap: spacing.md },
     grow: { flex: 1, gap: 2 },
+    cameraBadge: {
+      position: "absolute",
+      right: -2,
+      bottom: -2,
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: colors.primary,
+      borderWidth: 2,
+      borderColor: colors.surface,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    photoLinks: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },
+    photoLink: { color: colors.primary, fontSize: 13, fontFamily: fonts.bodySemiBold },
     name: { color: colors.text, fontSize: 20, fontFamily: fonts.headingMedium },
     email: { color: colors.textMuted, fontSize: 13 },
     sectionHead: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },

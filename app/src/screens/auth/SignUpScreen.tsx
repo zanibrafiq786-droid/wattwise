@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { AuthBackground } from "../../components/AuthBackground";
 import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
@@ -64,6 +65,7 @@ export function SignUpScreen({ navigation }: Props) {
   }
 
   return (
+    <AuthBackground>
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content}>
@@ -87,12 +89,13 @@ export function SignUpScreen({ navigation }: Props) {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </AuthBackground>
   );
 }
 
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.bg },
+    safe: { flex: 1, backgroundColor: "transparent" },
     content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
     title: { color: colors.text, fontSize: 30, fontFamily: fonts.headingMedium, marginBottom: spacing.sm },
     card: { width: "100%", gap: spacing.md },

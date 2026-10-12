@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
+import { AuthBackground } from "../../components/AuthBackground";
 import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
@@ -45,6 +46,7 @@ export function SignInScreen({ navigation }: Props) {
   }
 
   return (
+    <AuthBackground>
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -70,12 +72,13 @@ export function SignInScreen({ navigation }: Props) {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </AuthBackground>
   );
 }
 
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.bg },
+    safe: { flex: 1, backgroundColor: "transparent" },
     content: { padding: spacing.lg, flexGrow: 1, justifyContent: "center", alignItems: "center" },
     brand: { alignItems: "center", gap: 2, marginBottom: spacing.lg },
     appName: { color: colors.text, fontSize: 32, fontFamily: fonts.heading, marginTop: spacing.sm },

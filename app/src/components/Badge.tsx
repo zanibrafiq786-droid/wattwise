@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
-    borderRadius: radius.lg,
+    borderRadius: radius.pill,
     borderWidth: 1,
     gap: spacing.xs,
   },

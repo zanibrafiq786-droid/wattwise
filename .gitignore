@@ -52,3 +52,6 @@ Redesign/
 ionhse-bento/
 wattwise-bento/
 inspiration.mp4
+
+# Design zips (not part of the app)
+*.zip

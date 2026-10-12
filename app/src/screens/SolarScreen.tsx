@@ -6,8 +6,9 @@ import Svg, { Circle, Line, Rect } from "react-native-svg";
 import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import { Expandable } from "../components/Expandable";
 import { Icon, IconName } from "../components/Icon";
-import { RangeBarChart } from "../components/RangeBarChart";
+import { InfoTip } from "../components/InfoTip";
 import { TextField } from "../components/TextField";
 import { Toggle } from "../components/Toggle";
 import { useAuth } from "../lib/authContext";
@@ -141,7 +142,7 @@ function StatTile({ icon, label, value, color }: { icon: IconName; label: string
   const styles = makeStatStyles(colors);
   return (
     <View style={styles.tile}>
-      <View style={[styles.iconWrap, { backgroundColor: color + "22" }]}>
+      <View style={styles.iconWrap}>
         <Icon name={icon} size={18} color={color} />
       </View>
       <Text style={styles.tileValue}>{value}</Text>
@@ -310,48 +311,26 @@ export function SolarScreen() {
     (c) => c.design === report.recommendation.chosen.design && c.system_kw === report.recommendation.chosen.system_kw
   );
 
-  // One bar per design type (the 100%-offset size, the easiest apples-to-apples
-  // comparison for a non-technical reader) instead of showing all 12 raw
-  // candidate rows. Payback years, not raw annual saving -- a bigger, pricier
-  // system (e.g. off-grid) can show a bigger saving number while actually
-  // taking far longer to pay for itself, which looked backwards as a savings
-  // chart (off-grid "winning" right after the AI recommended hybrid).
-  const compareItems = useMemo(() => {
-    if (!report) return [];
-    const byDesign = new Map<string, SolarCandidate>();
-    for (const c of report.candidates) {
-      if (c.target_offset_pct === 100) byDesign.set(c.design, c);
-    }
-    const colorMap = DESIGN_COLOR(colors);
-    return Array.from(byDesign.values())
-      .filter((c) => c.payback_years_low != null)
-      .map((c) => ({
-        label: DESIGN_LABEL[c.design] ?? c.design,
-        low: c.payback_years_low as number,
-        high: c.payback_years_high as number,
-        color: colorMap[c.design] ?? colors.primary,
-        unit: t("solarYears"),
-      }));
-  }, [report, colors, t]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{t("solarTitle")}</Text>
-        <Text style={styles.intro}>{t("solarIntro")}</Text>
+        {/* Explanations sit behind small "i" buttons so the page stays short. */}
+        <InfoTip label={t("solarTitle")} labelStyle={styles.title} info={t("solarIntro")} />
 
         <Card style={styles.card}>
-          <Text style={styles.cardTitle}>{t("solarYourUsage")}</Text>
-          {smart.monthsCount > 0 && <Text style={styles.prefilledNote}>{t("solarPrefilled")}</Text>}
-          <Text style={applianceCount > 0 ? styles.prefilledNote : styles.advancedHint}>
-            {applianceCount > 0
-              ? t("solarUsingAppliances", { n: String(applianceCount) })
-              : t("solarAddAppliancesHint")}
-          </Text>
-          {locationStatus === "auto" && <Text style={styles.prefilledNote}>{t("solarLocationAuto")}</Text>}
-          {(locationStatus === "denied" || locationStatus === "default") && (
-            <Text style={styles.advancedHint}>{t("solarLocationDefault")}</Text>
-          )}
+          <InfoTip
+            label={t("solarYourUsage")}
+            labelStyle={styles.cardTitle}
+            info={[
+              smart.monthsCount > 0 ? t("solarPrefilled") : "",
+              applianceCount > 0
+                ? t("solarUsingAppliances", { n: String(applianceCount) })
+                : t("solarAddAppliancesHint"),
+              locationStatus === "auto" ? t("solarLocationAuto") : "",
+              locationStatus === "denied" || locationStatus === "default" ? t("solarLocationDefault") : "",
+            ]}
+          />
 
           <View style={styles.toggleRow}>
             <View style={{ flex: 1 }}>
@@ -367,7 +346,7 @@ export function SolarScreen() {
           </View>
 
           <View style={styles.fieldBlock}>
-            <Text style={styles.toggleLabel}>{t("solarRoofDirection")}</Text>
+            <InfoTip label={t("solarRoofDirection")} info={[t("solarDirBestNote"), t("solarDetectInfo")]} />
             <View style={styles.slotRow}>
               {DIRECTIONS.map((d) => {
                 const active = roofDirection === d.value;
@@ -382,7 +361,6 @@ export function SolarScreen() {
                 );
               })}
             </View>
-            {roofDirection === "south" && !detectedHeadingDeg && <Text style={styles.advancedHint}>{t("solarDirBestNote")}</Text>}
 
             <Pressable style={styles.compassButton} onPress={handleDetectDirection} disabled={detecting}>
               <Icon name="refresh" size={14} color={colors.primary} />
@@ -396,7 +374,7 @@ export function SolarScreen() {
           </View>
 
           <View style={styles.fieldBlock}>
-            <Text style={styles.toggleLabel}>{t("solarRoofTilt")}</Text>
+            <InfoTip label={t("solarRoofTilt")} info={[t("solarRoofTiltInfo"), t("solarIllustrative")]} />
             <Stepper
               value={tiltDeg}
               onChange={(v) => {
@@ -410,7 +388,6 @@ export function SolarScreen() {
           </View>
 
           <RoofDiagram direction={roofDirection} tiltDeg={tiltDeg} />
-          <Text style={styles.advancedHint}>{t("solarIllustrative")}</Text>
 
           <View style={styles.fieldBlock}>
             <Text style={styles.toggleLabel}>{t("solarOutageHours")}</Text>
@@ -489,20 +466,21 @@ export function SolarScreen() {
                 {DESIGN_LABEL[report.recommendation.chosen.design] ?? report.recommendation.chosen.design}
               </Text>
               {report.bill_profile.confidence !== "high" && (
-                <Text style={styles.lowConfidence}>{t("solarLowConfidence")}</Text>
+                <InfoTip label={t("solarLowConfidenceShort")} labelStyle={styles.lowConfidence} info={t("solarLowConfidence")} />
               )}
             </Card>
 
             {report.recommendation.region_note ? (
               <Card style={styles.regionCard}>
                 <Icon name="warn" size={18} color={colors.warning} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={styles.regionTitle}>
-                    {t("solarRegionTitle", {
+                <View style={{ flex: 1 }}>
+                  <InfoTip
+                    label={t("solarRegionTitle", {
                       place: [report.region?.city, report.region?.country].filter(Boolean).join(", ") || "your area",
                     })}
-                  </Text>
-                  <Text style={styles.regionText}>{report.recommendation.region_note}</Text>
+                    labelStyle={styles.regionTitle}
+                    info={report.recommendation.region_note}
+                  />
                 </View>
               </Card>
             ) : null}
@@ -548,22 +526,14 @@ export function SolarScreen() {
               />
             </View>
 
-            <Card style={styles.card}>
+            <Expandable title={t("solarDetails")} subtitle={t("solarDetailsSub")} icon="list">
               <BulletRow icon="warn" text={report.recommendation.tradeoffs} color={colors.warning} />
               <BulletRow icon="chip" text={report.recommendation.what_could_change_the_answer} color={colors.textMuted} />
               {report.recommendation.vendor_checklist.map((item, i) => (
                 <BulletRow key={i} icon="check" text={item} color={colors.success} />
               ))}
-            </Card>
+            </Expandable>
 
-            {compareItems.length > 0 && (
-              <>
-                <Text style={styles.cardTitle}>{t("solarCompareChart")}</Text>
-                <Card style={styles.card}>
-                  <RangeBarChart items={compareItems} />
-                </Card>
-              </>
-            )}
           </>
         )}
       </ScrollView>
@@ -576,7 +546,6 @@ function makeStyles(colors: Colors) {
     safe: { flex: 1, backgroundColor: colors.bg },
     content: { padding: spacing.md, gap: spacing.md },
     title: { color: colors.text, fontSize: 30, fontFamily: fonts.headingMedium },
-    intro: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
     card: { gap: spacing.sm },
     row: { flexDirection: "row", gap: spacing.sm },
     fieldBlock: { gap: spacing.xs, marginTop: spacing.xs },
@@ -587,7 +556,7 @@ function makeStyles(colors: Colors) {
     slotChip: {
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.sm + 2,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surfaceAlt,
@@ -603,7 +572,7 @@ function makeStyles(colors: Colors) {
       marginTop: spacing.xs,
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.sm,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       borderWidth: 1,
       borderColor: colors.primary,
     },
@@ -621,7 +590,6 @@ function makeStyles(colors: Colors) {
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: colors.primary + "22",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: spacing.xs,
@@ -631,7 +599,6 @@ function makeStyles(colors: Colors) {
     statsGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
     regionCard: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-start", borderColor: colors.warning + "66" },
     regionTitle: { color: colors.text, fontSize: 14, fontFamily: fonts.bodySemiBold },
-    regionText: { color: colors.text, fontSize: 13, lineHeight: 19 },
   });
 }
 

@@ -13,7 +13,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { Icon, IconName } from "../components/Icon";
-import { Sparkle } from "../components/Sparkle";
+import { Floating } from "../components/Floating";
+import { GlassOrb } from "../components/GlassOrb";
 import { TextField } from "../components/TextField";
 import { useAuth } from "../lib/authContext";
 import { ChatMessage, clearChat, sendChatMessage, useChatMessages, usePendingTimeout } from "../lib/chat";
@@ -57,11 +58,13 @@ export function ChatScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+      {/* "padding" on Android too: with edge-to-edge screens Android no longer
+          shrinks the window for the keyboard, so we push the input up ourselves. */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <View style={styles.topRow}>
           <View style={styles.titleRow}>
-            <Sparkle size={20} id="chatTitleSparkle" />
+            <GlassOrb size={34} id="chatTitleOrb" />
             <Text style={styles.title}>{t("chatTitle")}</Text>
           </View>
           <View style={styles.topRowRight}>
@@ -76,9 +79,9 @@ export function ChatScreen() {
 
         {messages.length === 0 ? (
           <ScrollView contentContainerStyle={styles.welcome}>
-            <View style={styles.orb}>
-              <Sparkle size={44} id="chatWelcomeSparkle" />
-            </View>
+            <Floating style={styles.orb}>
+              <GlassOrb size={88} id="chatWelcomeOrb" />
+            </Floating>
             <Text style={styles.greeting}>{t("chatGreeting", { name: firstName })}</Text>
             <Text style={styles.headline}>
               {t("chatHeadlineA")} <Text style={styles.headlineBold}>{t("chatHeadlineB")}</Text>
@@ -161,12 +164,6 @@ function makeStyles(colors: Colors) {
     welcome: { flexGrow: 1, justifyContent: "center", padding: spacing.md, gap: spacing.sm },
     orb: {
       alignSelf: "center",
-      width: 84,
-      height: 84,
-      borderRadius: 42,
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: spacing.sm,

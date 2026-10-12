@@ -155,7 +155,7 @@ function DeviceRow({
   const styles = makeStyles(colors);
   return (
     <View style={[styles.row, !last && styles.rowDivider]}>
-      <View style={[styles.rowIcon, on && { borderColor: colors.primary, backgroundColor: colors.primary + "22" }]}>
+      <View style={[styles.rowIcon, on && { borderColor: colors.primary }]}>
         <Icon name={icon} size={20} color={on ? colors.primary : colors.textMuted} />
       </View>
       <View style={{ flex: 1 }}>
@@ -226,7 +226,7 @@ function makeStyles(colors: Colors) {
     },
     rowName: { color: colors.text, fontSize: 15, fontFamily: fonts.bodySemiBold },
     rowSource: { color: colors.textMuted, fontSize: 12 },
-    statePill: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: 999, backgroundColor: colors.surfaceAlt },
+    statePill: { paddingVertical: 5, paddingHorizontal: 12, borderRadius: radius.pill, backgroundColor: colors.surfaceAlt },
     statePillText: { color: colors.textMuted, fontSize: 12, fontFamily: fonts.bodySemiBold },
     readings: {
       flexDirection: "row",
@@ -241,7 +241,7 @@ function makeStyles(colors: Colors) {
     chip: {
       paddingVertical: 8,
       paddingHorizontal: 14,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       borderWidth: 1,
       borderColor: colors.border,
       backgroundColor: colors.surface,
@@ -253,7 +253,7 @@ function makeStyles(colors: Colors) {
     calibButton: {
       alignSelf: "flex-start",
       backgroundColor: colors.primary,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       paddingVertical: 10,
       paddingHorizontal: 18,
     },

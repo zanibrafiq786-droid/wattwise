@@ -1,24 +1,15 @@
 import React from "react";
-import Svg, { Path, Rect } from "react-native-svg";
-import { useThemeMode } from "../lib/themeContext";
+import { Image } from "react-native";
 
-// WattWise logo mark: a rounded square with a "W" drawn as a motion wave.
-// Two real variants exist (not just a color swap): espresso bg + orange
-// stroke, or cream bg + dark stroke (logo-mark-espresso.svg / -cream.svg).
+// The WattWise logo (Redesign/logo): an orange disc split by a lightning
+// bolt. Its orange is used here and nowhere else in the interface.
 export function LogoMark({ size = 40 }: { size?: number }) {
-  const { mode, colors } = useThemeMode();
-  const stroke = mode === "cream" ? colors.text : colors.primary;
   return (
-    <Svg width={size} height={size} viewBox="0 0 40 40">
-      <Rect width={40} height={40} rx={14} fill={colors.bg} />
-      <Path
-        d="M8 14L13 27L20 13L27 27L32 14"
-        fill="none"
-        stroke={stroke}
-        strokeWidth={3.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <Image
+      source={require("../../assets/logo-256.png")}
+      style={{ width: size, height: size }}
+      accessibilityRole="image"
+      accessibilityLabel="WattWise"
+    />
   );
 }

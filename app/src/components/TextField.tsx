@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
-import { Colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing, radius } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 
 export function TextField({ label, ...props }: { label: string } & TextInputProps) {
@@ -28,7 +28,7 @@ function makeStyles(colors: Colors) {
       backgroundColor: colors.surfaceAlt,
       borderWidth: 1,
       borderColor: colors.border,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       height: 50,
       paddingHorizontal: spacing.md,
       color: colors.text,

@@ -13,9 +13,8 @@
     "android": {
       "package": "com.roomenergy.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
@@ -36,6 +35,15 @@
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "WattWise uses your location to look up real sun/weather data for your area's solar estimate."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 140,
+          "resizeMode": "contain",
+          "backgroundColor": "#15110e"
         }
       ]
     ]

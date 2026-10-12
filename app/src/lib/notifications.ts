@@ -37,7 +37,9 @@ export async function ensureNotificationPermission() {
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("alerts", {
       name: "Room alerts",
-      importance: Notifications.AndroidImportance.DEFAULT,
+      // HIGH = shows as a pop-up banner at the top of the screen.
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 150, 250],
     });
   }
 }
@@ -45,7 +47,7 @@ export async function ensureNotificationPermission() {
 export async function notifyNewAlert(message: string) {
   if (!Notifications) return;
   await Notifications.scheduleNotificationAsync({
-    content: { title: "Room Energy Alert", body: message },
-    trigger: null,
+    content: { title: "WattWise alert", body: message },
+    trigger: Platform.OS === "android" ? { channelId: "alerts" } : null,
   });
 }

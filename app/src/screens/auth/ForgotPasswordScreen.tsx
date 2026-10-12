@@ -4,6 +4,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { AuthBackground } from "../../components/AuthBackground";
 import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
@@ -43,6 +44,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   }
 
   return (
+    <AuthBackground>
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <LogoMark size={56} />
@@ -65,12 +67,13 @@ export function ForgotPasswordScreen({ navigation }: Props) {
         </Card>
       </ScrollView>
     </SafeAreaView>
+    </AuthBackground>
   );
 }
 
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.bg },
+    safe: { flex: 1, backgroundColor: "transparent" },
     content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
     title: { color: colors.text, fontSize: 30, fontFamily: fonts.headingMedium, marginBottom: spacing.sm },
     card: { width: "100%", gap: spacing.md },

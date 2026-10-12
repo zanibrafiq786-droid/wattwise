@@ -5,7 +5,7 @@ import { SaveResult, scanBill } from "../lib/billImport";
 import { billAmountLabel } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
 import { monthName } from "../lib/months";
-import { Colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing, radius } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 import { Card } from "./Card";
 import { Icon } from "./Icon";
@@ -136,7 +136,7 @@ function makeStyles(colors: Colors) {
       alignSelf: "flex-start",
       paddingVertical: 7,
       paddingHorizontal: 14,
-      borderRadius: 999,
+      borderRadius: radius.pill,
       borderWidth: 1.5,
       borderColor: colors.border,
     },

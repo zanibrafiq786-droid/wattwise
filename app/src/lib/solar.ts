@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { onValue, ref, set } from "firebase/database";
 import { db } from "../../firebaseConfig";
+import { runInCloud } from "./cloudBrain";
 
 export interface SolarRequest {
   lat: number;
@@ -105,7 +106,7 @@ export function computeSmartDefaults(bills: { units: number; amount_rs?: number 
 
 export function runSolarAnalysis(uid: string, inputs: SolarRequest) {
   const id = `req_${Date.now()}`;
-  return set(ref(db, `/users/${uid}/solar/requests/${id}`), inputs);
+  return set(ref(db, `/users/${uid}/solar/requests/${id}`), inputs).then(() => runInCloud("solar", id));
 }
 
 export function useSolarStatus(uid: string | null) {

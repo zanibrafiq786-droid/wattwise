@@ -3,6 +3,7 @@ Shared Firebase Realtime Database access for the brain/ Python scripts.
 Uses the Admin SDK (service account), which can read and write anything --
 unlike the app, which only ever uses the public Firebase JS SDK.
 """
+import json
 import os
 from pathlib import Path
 
@@ -22,6 +23,15 @@ def get_app():
         return _app
 
     database_url = os.environ.get("FIREBASE_DATABASE_URL")
+
+    # On Vercel (api/brain.py) the service account comes from a secret
+    # environment variable holding the JSON itself -- there is no key file.
+    service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if database_url and service_account_json:
+        cred = credentials.Certificate(json.loads(service_account_json))
+        _app = firebase_admin.initialize_app(cred, {"databaseURL": database_url})
+        return _app
+
     service_account_path = os.environ.get("FIREBASE_SERVICE_ACCOUNT_PATH")
     if not database_url or not service_account_path:
         raise RuntimeError(

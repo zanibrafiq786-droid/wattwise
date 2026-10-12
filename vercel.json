@@ -1,0 +1,9 @@
+{
+  "framework": null,
+  "functions": {
+    "api/brain.py": {
+      "maxDuration": 300,
+      "includeFiles": "brain/*.py"
+    }
+  }
+}

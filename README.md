@@ -55,6 +55,16 @@ write (the Python brain uses the service account, which bypasses rules). This is
 not full per-user security -- any signed-in account can still read other paths. Tighten to
 per-user rules before real use.
 
+### Cloud brain (Vercel) -- chat, bill scan and solar without the laptop
+
+`api/brain.py` runs the same brain code as a Vercel serverless function
+(https://wattwise-brain.vercel.app/api/brain). The app writes each request to Firebase as before,
+then calls this URL with the user's Firebase sign-in token; the function checks the token,
+does the job and writes the result back to Firebase. Deploy with `npx vercel deploy --prod`
+from the repo root after setting these Vercel environment variables: `GEMINI_API_KEY`,
+`GEMINI_MODEL`, `FIREBASE_DATABASE_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (the whole JSON).
+The live room sensor still needs the laptop: the ESP32 sends data over USB to `brain/bridge.py`.
+
 ## What's real vs. simulated vs. estimated
 
 - Presence, light/fan state, and temperature come from the real ESP32 sensors when the firmware

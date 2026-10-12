@@ -4,6 +4,7 @@ weather.py -- CHATBOT_SOLAR.md B1: fetches hourly solar irradiance
 archive API, and caches it to disk so repeat runs/demos don't re-fetch.
 """
 import json
+import os
 import time
 from datetime import date, timedelta
 from pathlib import Path
@@ -11,8 +12,9 @@ from pathlib import Path
 import requests
 
 BRAIN_DIR = Path(__file__).parent
-CACHE_DIR = BRAIN_DIR / ".cache"
-CACHE_DIR.mkdir(exist_ok=True)
+# On Vercel only /tmp is writable, so the cache goes there in the cloud.
+CACHE_DIR = Path("/tmp/wattwise-cache") if os.environ.get("VERCEL") else BRAIN_DIR / ".cache"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 CACHE_MAX_AGE_SECONDS = 30 * 24 * 3600  # a month -- irradiance history doesn't change
 
 ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"

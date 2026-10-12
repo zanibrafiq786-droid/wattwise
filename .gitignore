@@ -55,3 +55,7 @@ inspiration.mp4
 
 # Design zips (not part of the app)
 *.zip
+
+# Vercel CLI local files
+.vercel
+.env.local

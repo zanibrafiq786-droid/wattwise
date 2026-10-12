@@ -1,10 +1,12 @@
 // CHATBOT_SOLAR.md Part A: chat transport through Firebase, no server.
 // The app only ever writes requests and reads replies under its own
-// uid -- the AI call itself happens in brain/chat_worker.py on the laptop,
-// which is the only place the model API key lives.
+// uid -- the AI call itself happens in the cloud brain (api/brain.py on
+// Vercel) or brain/chat_worker.py on the laptop; the model API key lives
+// only there.
 import { useEffect, useRef, useState } from "react";
 import { onValue, push, ref, remove, set } from "firebase/database";
 import { db } from "../../firebaseConfig";
+import { runInCloud } from "./cloudBrain";
 
 export interface ChatMessage {
   id: string;
@@ -31,7 +33,7 @@ interface ChatReply {
 export function sendChatMessage(uid: string, text: string, lang: string): string {
   const reqRef = push(ref(db, `/users/${uid}/chat/requests`));
   const id = reqRef.key!;
-  set(reqRef, { text, ts: Date.now(), lang } satisfies ChatRequest);
+  set(reqRef, { text, ts: Date.now(), lang } satisfies ChatRequest).then(() => runInCloud("chat", id));
   return id;
 }
 

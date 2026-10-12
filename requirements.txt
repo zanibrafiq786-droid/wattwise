@@ -1,0 +1,6 @@
+# Only for the Vercel cloud function (api/brain.py). The laptop brain uses
+# brain/requirements.txt (which also has the sensor/ML packages).
+firebase-admin
+google-genai
+requests
+python-dotenv

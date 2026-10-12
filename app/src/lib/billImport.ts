@@ -7,6 +7,7 @@
 // transport pattern as the chat and solar features.
 import { onValue, ref, set } from "firebase/database";
 import { auth, db } from "../../firebaseConfig";
+import { runInCloud } from "./cloudBrain";
 
 export interface SaveResult {
   saved: { month: string; units: number; amount_rs?: number | null }[];
@@ -27,7 +28,7 @@ export function scanBill(base64: string, mimeType: string): Promise<SaveResult> 
       unsub?.();
       reject(
         new Error(
-          "The bill reader didn't answer. It runs on the laptop -- make sure `python chat_worker.py` is running, then try again."
+          "The bill reader didn't answer. Check your internet connection and try again."
         )
       );
     }, TIMEOUT_MS);
@@ -44,7 +45,9 @@ export function scanBill(base64: string, mimeType: string): Promise<SaveResult> 
       resolve({ saved: v.saved ?? [], skipped: v.skipped ?? [] });
     });
 
-    set(node, { image_b64: base64, mime: mimeType, ts: Date.now() }).catch((err) => {
+    set(node, { image_b64: base64, mime: mimeType, ts: Date.now() })
+      .then(() => runInCloud("scan", id))
+      .catch((err) => {
       clearTimeout(timer);
       unsub?.();
       reject(err);

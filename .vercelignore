@@ -1,0 +1,16 @@
+# Upload only what the cloud brain needs -- never secrets.
+/*
+!/api
+!/brain
+!/requirements.txt
+!/vercel.json
+/brain/.env
+/brain/*.env
+/brain/serviceAccountKey.json
+/brain/test_bills
+/brain/tests
+/brain/.cache
+/brain/__pycache__
+/brain/*.log
+/brain/*.csv
+/brain/*.joblib

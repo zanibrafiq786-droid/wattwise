@@ -2,6 +2,7 @@ import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { ExtractedBill, extractBillFromImage, saveExtractedBill, validateExtractedBill } from "../lib/billImport";
+import { useI18n } from "../lib/i18n";
 import { colors, spacing } from "../lib/theme";
 import { Button } from "./Button";
 import { Card } from "./Card";
@@ -9,6 +10,7 @@ import { Card } from "./Card";
 type Status = "idle" | "loading" | "review" | "error" | "done";
 
 export function BillImportCard() {
+  const { t } = useI18n();
   const [status, setStatus] = useState<Status>("idle");
   const [extracted, setExtracted] = useState<ExtractedBill | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -70,7 +72,7 @@ export function BillImportCard() {
 
   return (
     <Card style={styles.card}>
-      <Text style={styles.title}>Import bill from photo</Text>
+      <Text style={styles.title}>{t("importBillTitle")}</Text>
 
       {status === "idle" && (
         <>
@@ -79,8 +81,8 @@ export function BillImportCard() {
             12-month history table printed on it.
           </Text>
           <View style={styles.row}>
-            <Button label="Camera" onPress={() => pickAndExtract("camera")} />
-            <Button label="Gallery" variant="secondary" onPress={() => pickAndExtract("library")} />
+            <Button label={t("camera")} onPress={() => pickAndExtract("camera")} />
+            <Button label={t("gallery")} variant="secondary" onPress={() => pickAndExtract("library")} />
           </View>
         </>
       )}
@@ -113,8 +115,8 @@ export function BillImportCard() {
             </View>
           )}
           <View style={styles.row}>
-            <Button label="Save to Firebase" onPress={confirmSave} />
-            <Button label="Cancel" variant="secondary" onPress={reset} />
+            <Button label={t("saveToFirebase")} onPress={confirmSave} />
+            <Button label={t("cancel")} variant="secondary" onPress={reset} />
           </View>
         </>
       )}
@@ -124,14 +126,14 @@ export function BillImportCard() {
           <Text style={styles.successText}>
             Saved {savedMonths.length} month(s): {savedMonths.sort().join(", ")}
           </Text>
-          <Button label="Import another" variant="secondary" onPress={reset} />
+          <Button label={t("importAnother")} variant="secondary" onPress={reset} />
         </>
       )}
 
       {status === "error" && (
         <>
           <Text style={styles.errorText}>{errorMsg}</Text>
-          <Button label="Try again" variant="secondary" onPress={reset} />
+          <Button label={t("tryAgain")} variant="secondary" onPress={reset} />
         </>
       )}
     </Card>

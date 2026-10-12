@@ -27,6 +27,9 @@
         "projectId": "818d96e1-6338-4725-a9ad-edf8396e19f5"
       }
     },
-    "owner": "zainab87s-team"
+    "owner": "zainab87s-team",
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }

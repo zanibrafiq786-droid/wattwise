@@ -5,14 +5,15 @@ import { Badge } from "../components/Badge";
 import { Card } from "../components/Card";
 import { StateView } from "../components/StateView";
 import { setAcOn, useAcOn, useRoomState } from "../lib/firebase";
+import { TranslationKey, useI18n } from "../lib/i18n";
 import { timeAgo } from "../lib/time";
 import { colors, spacing } from "../lib/theme";
 import { Presence } from "../lib/types";
 
-const PRESENCE_LABEL: Record<Presence, string> = {
-  active: "Active",
-  quiet: "Quiet",
-  empty: "Empty",
+const PRESENCE_LABEL_KEY: Record<Presence, TranslationKey> = {
+  active: "presenceActive",
+  quiet: "presenceQuiet",
+  empty: "presenceEmpty",
 };
 
 function presenceColor(p: Presence) {
@@ -27,6 +28,7 @@ export function LiveScreen() {
   const [acOnOverride, setAcOnOverride] = useState<boolean | null>(null);
   const acOn = acOnOverride ?? acOnRemote;
   const [acBusy, setAcBusy] = useState(false);
+  const { t } = useI18n();
 
   async function toggleAc(value: boolean) {
     setAcOnOverride(value);
@@ -41,36 +43,36 @@ export function LiveScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Room 1</Text>
-        <StateView loading={loading} error={error} empty={!state} emptyMessage="No data from the sensor yet. Make sure the ESP32 is powered on and connected.">
+        <Text style={styles.title}>{t("room1")}</Text>
+        <StateView loading={loading} error={error} empty={!state} emptyMessage={t("noSensorData")}>
           {state && (
             <>
               <Card style={styles.presenceCard}>
                 <View style={styles.presenceHeader}>
                   <Badge
-                    label={PRESENCE_LABEL[state.presence] ?? "Unknown"}
+                    label={t(PRESENCE_LABEL_KEY[state.presence]) ?? "?"}
                     color={presenceColor(state.presence)}
                   />
-                  <Text style={styles.updated}>Updated {timeAgo(state.updated_at)}</Text>
+                  <Text style={styles.updated}>{t("updatedAgo", { time: timeAgo(state.updated_at) })}</Text>
                 </View>
                 <View style={styles.readingRow}>
-                  <Reading label="Temperature" value={`${state.temp_c.toFixed(1)} C`} />
-                  <Reading label="Humidity" value={`${state.humidity.toFixed(0)}%`} />
+                  <Reading label={t("temperature")} value={`${state.temp_c.toFixed(1)} C`} />
+                  <Reading label={t("humidity")} value={`${state.humidity.toFixed(0)}%`} />
                 </View>
               </Card>
 
               <View style={styles.row}>
                 <Card style={styles.half}>
-                  <Text style={styles.deviceLabel}>Light</Text>
+                  <Text style={styles.deviceLabel}>{t("light")}</Text>
                   <Badge
-                    label={state.light_on ? "On" : "Off"}
+                    label={state.light_on ? t("on") : t("off")}
                     color={state.light_on ? colors.warning : colors.textMuted}
                   />
                 </Card>
                 <Card style={styles.half}>
-                  <Text style={styles.deviceLabel}>Fan</Text>
+                  <Text style={styles.deviceLabel}>{t("fan")}</Text>
                   <Badge
-                    label={state.fan_on ? "On" : "Off"}
+                    label={state.fan_on ? t("on") : t("off")}
                     color={state.fan_on ? colors.primary : colors.textMuted}
                   />
                 </Card>
@@ -79,8 +81,8 @@ export function LiveScreen() {
               <Card>
                 <View style={styles.acRow}>
                   <View>
-                    <Text style={styles.deviceLabel}>AC</Text>
-                    <Text style={styles.muted}>Tap to tell the app the AC is on (no sensor)</Text>
+                    <Text style={styles.deviceLabel}>{t("ac")}</Text>
+                    <Text style={styles.muted}>{t("acToggleHint")}</Text>
                   </View>
                   <Switch
                     value={acOn}
@@ -92,13 +94,11 @@ export function LiveScreen() {
               </Card>
 
               <Card style={styles.wifiCard}>
-                <Text style={styles.deviceLabel}>Light sensor (raw)</Text>
-                <Text style={styles.muted}>
-                  See the Room tab for the live Wi-Fi motion view and signal chart.
-                </Text>
+                <Text style={styles.deviceLabel}>{t("lightSensorRaw")}</Text>
+                <Text style={styles.muted}>{t("seeRoomTabHint")}</Text>
                 <View style={styles.row}>
-                  <Reading label="LDR reading" value={String(state.ldr)} />
-                  <Reading label="Vibration" value={state.vib.toFixed(3)} />
+                  <Reading label={t("ldrReading")} value={String(state.ldr)} />
+                  <Reading label={t("vibration")} value={state.vib.toFixed(3)} />
                 </View>
               </Card>
             </>

@@ -6,6 +6,7 @@ import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { StateView } from "../components/StateView";
 import { setAlertStatus, useAlerts } from "../lib/firebase";
+import { useI18n } from "../lib/i18n";
 import { ensureNotificationPermission, notifyNewAlert } from "../lib/notifications";
 import { timeAgo } from "../lib/time";
 import { colors, spacing } from "../lib/theme";
@@ -14,6 +15,7 @@ import { Alert } from "../lib/types";
 export function AlertsScreen() {
   const { alerts, loading, error } = useAlerts();
   const seenIds = useRef<Set<string> | null>(null);
+  const { t } = useI18n();
 
   useEffect(() => {
     ensureNotificationPermission();
@@ -35,12 +37,12 @@ export function AlertsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <Text style={styles.title}>Alerts</Text>
+      <Text style={styles.title}>{t("alerts")}</Text>
       <StateView
         loading={loading}
         error={error}
         empty={!alerts || alerts.length === 0}
-        emptyMessage="No alerts yet. You'll see one here if a room is left empty with the fan, light or AC on."
+        emptyMessage={t("noAlertsYet")}
       >
         <FlatList
           data={alerts ?? []}
@@ -55,11 +57,12 @@ export function AlertsScreen() {
 
 function AlertRow({ alert }: { alert: Alert }) {
   const isNew = alert.status === "new";
+  const { t } = useI18n();
   return (
     <Card style={styles.card}>
       <View style={styles.rowTop}>
         <Badge
-          label={alert.status === "new" ? "New" : alert.status === "acted" ? "Acted" : "Dismissed"}
+          label={alert.status === "new" ? t("statusNew") : alert.status === "acted" ? t("statusActed") : t("statusDismissed")}
           color={
             alert.status === "new" ? colors.warning : alert.status === "acted" ? colors.success : colors.textMuted
           }
@@ -68,16 +71,14 @@ function AlertRow({ alert }: { alert: Alert }) {
       </View>
       <Text style={styles.message}>{alert.message}</Text>
       {typeof alert.wasted_rs_est === "number" && (
-        <Text style={styles.waste}>Estimated waste: Rs {alert.wasted_rs_est.toFixed(0)}</Text>
+        <Text style={styles.waste}>
+          {t("estimatedWaste")}: Rs {alert.wasted_rs_est.toFixed(0)}
+        </Text>
       )}
       {isNew && (
         <View style={styles.actions}>
-          <Button
-            label="I switched it off"
-            variant="primary"
-            onPress={() => setAlertStatus(alert.id, "acted")}
-          />
-          <Button label="Ignore" variant="secondary" onPress={() => setAlertStatus(alert.id, "dismissed")} />
+          <Button label={t("switchedOff")} variant="primary" onPress={() => setAlertStatus(alert.id, "acted")} />
+          <Button label={t("ignore")} variant="secondary" onPress={() => setAlertStatus(alert.id, "dismissed")} />
         </View>
       )}
     </Card>

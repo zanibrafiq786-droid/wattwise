@@ -1,0 +1,50 @@
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import React from "react";
+import { Text } from "react-native";
+import { AcAlertBanner } from "../components/AcAlertBanner";
+import { useI18n } from "../lib/i18n";
+import { colors } from "../lib/theme";
+import { useAcLeftOnWatcher } from "../lib/useAcLeftOnWatcher";
+import { AlertsScreen } from "./AlertsScreen";
+import { LiveScreen } from "./LiveScreen";
+import { ReportScreen } from "./ReportScreen";
+import { RoomScreen } from "./RoomScreen";
+import { SetupScreen } from "./SetupScreen";
+
+const Tab = createBottomTabNavigator();
+
+const ICONS: Record<string, string> = {
+  Live: "⚡",
+  Room: "📡",
+  Alerts: "🔔",
+  Report: "📊",
+  Setup: "⚙",
+};
+
+export function MainTabs() {
+  // Mounted once here (not per-screen) so the empty+AC-on timer keeps
+  // running no matter which tab is open.
+  useAcLeftOnWatcher("room1");
+  const { t } = useI18n();
+
+  return (
+    <>
+      <AcAlertBanner room="room1" />
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textMuted,
+          tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
+          tabBarIcon: () => <Text style={{ fontSize: 18 }}>{ICONS[route.name]}</Text>,
+        })}
+      >
+        <Tab.Screen name="Live" component={LiveScreen} options={{ tabBarLabel: t("tabLive") }} />
+        <Tab.Screen name="Room" component={RoomScreen} options={{ tabBarLabel: t("tabRoom") }} />
+        <Tab.Screen name="Alerts" component={AlertsScreen} options={{ tabBarLabel: t("tabAlerts") }} />
+        <Tab.Screen name="Report" component={ReportScreen} options={{ tabBarLabel: t("tabReport") }} />
+        <Tab.Screen name="Setup" component={SetupScreen} options={{ tabBarLabel: t("tabSetup") }} />
+      </Tab.Navigator>
+    </>
+  );
+}

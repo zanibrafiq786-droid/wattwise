@@ -3,7 +3,9 @@ import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import { useAuth } from "../lib/authContext";
 import { saveBill, saveConfig, useBill, useConfig } from "../lib/firebase";
+import { useI18n } from "../lib/i18n";
 import { colors, spacing } from "../lib/theme";
 
 function currentMonthKey() {
@@ -15,6 +17,8 @@ export function SetupScreen() {
   const monthKey = currentMonthKey();
   const { bill } = useBill(monthKey);
   const { config } = useConfig();
+  const { user, signOut } = useAuth();
+  const { t, language, setLanguage } = useI18n();
 
   const [units, setUnits] = useState("");
   const [amount, setAmount] = useState("");
@@ -69,25 +73,41 @@ export function SetupScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Setup</Text>
+        <Text style={styles.title}>{t("setup")}</Text>
 
         <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Electricity bill ({monthKey})</Text>
-          <Field label="Units (kWh)" value={units} onChangeText={setUnits} />
-          <Field label="Amount (Rs)" value={amount} onChangeText={setAmount} />
-          <Button label="Save bill" onPress={handleSaveBill} />
+          <Text style={styles.cardTitle}>
+            {t("electricityBill")} ({monthKey})
+          </Text>
+          <Field label={t("unitsKwh")} value={units} onChangeText={setUnits} />
+          <Field label={t("amountRs")} value={amount} onChangeText={setAmount} />
+          <Button label={t("saveBill")} onPress={handleSaveBill} />
         </Card>
 
         <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Appliance wattage &amp; rate</Text>
-          <Field label="Fan (W)" value={fanW} onChangeText={setFanW} />
-          <Field label="Light (W)" value={lightW} onChangeText={setLightW} />
-          <Field label="AC (W)" value={acW} onChangeText={setAcW} />
-          <Field label="Rate (Rs per unit)" value={rate} onChangeText={setRate} />
-          <Button label="Save settings" onPress={handleSaveConfig} />
+          <Text style={styles.cardTitle}>{t("applianceWattageRate")}</Text>
+          <Field label={t("fanWatts")} value={fanW} onChangeText={setFanW} />
+          <Field label={t("lightWatts")} value={lightW} onChangeText={setLightW} />
+          <Field label={t("acWatts")} value={acW} onChangeText={setAcW} />
+          <Field label={t("rateRsPerUnit")} value={rate} onChangeText={setRate} />
+          <Button label={t("saveSettings")} onPress={handleSaveConfig} />
         </Card>
 
         {savedMsg ? <Text style={styles.saved}>{savedMsg}</Text> : null}
+
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>{t("language")}</Text>
+          <View style={styles.langRow}>
+            <Button label="English" variant={language === "en" ? "primary" : "secondary"} onPress={() => setLanguage("en")} />
+            <Button label="اردو" variant={language === "ur" ? "primary" : "secondary"} onPress={() => setLanguage("ur")} />
+          </View>
+        </Card>
+
+        <Card style={styles.card}>
+          <Text style={styles.cardTitle}>{t("account")}</Text>
+          <Text style={styles.fieldLabel}>{user?.email}</Text>
+          <Button label={t("signOut")} variant="danger" onPress={() => signOut()} />
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );
@@ -136,4 +156,5 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   saved: { color: colors.success, textAlign: "center" },
+  langRow: { flexDirection: "row", gap: spacing.sm },
 });

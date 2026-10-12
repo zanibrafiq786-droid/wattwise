@@ -3,7 +3,12 @@
 // by Realtime Database security rules, not by hiding this file. Still, the
 // rules are currently in TEST MODE (open to anyone) and MUST be locked down
 // after the hackathon.
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { initializeApp } from "firebase/app";
+// @ts-expect-error -- getReactNativePersistence exists in the RN build of
+// firebase/auth (resolved via Metro's "react-native" package export
+// condition) but isn't in the TypeScript types for the generic entry point.
+import { getReactNativePersistence, initializeAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 // .env may define these keys as empty strings (not just leave them unset),
@@ -28,3 +33,6 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
+export const auth = initializeAuth(app, {
+  persistence: getReactNativePersistence(AsyncStorage),
+});

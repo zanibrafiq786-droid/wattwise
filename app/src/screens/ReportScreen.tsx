@@ -17,6 +17,7 @@ import {
   useSimulatedFlag,
 } from "../lib/firebase";
 import { computeForecast } from "../lib/forecastCalc";
+import { useI18n } from "../lib/i18n";
 import { computeWasteReport } from "../lib/reportCalc";
 import { colors, spacing } from "../lib/theme";
 
@@ -40,19 +41,20 @@ export function ReportScreen() {
   // until it's actually imported.
   const waste = events ? computeWasteReport(events, config, latestBill ?? bill) : null;
   const forecasts = bills ? computeForecast(bills, config) : [];
+  const { t } = useI18n();
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Report - {monthKey}</Text>
+          <Text style={styles.title}>{t("report")} - {monthKey}</Text>
           {simulated && <Badge label="SIMULATED" color={colors.warning} />}
         </View>
 
         <BillImportCard />
 
         <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Bill history</Text>
+          <Text style={styles.cardTitle}>{t("billHistory")}</Text>
           <StateView
             loading={billsLoading}
             empty={!bills || bills.length === 0}
@@ -76,7 +78,7 @@ export function ReportScreen() {
           {waste && (
             <>
               <Card style={styles.card}>
-                <Text style={styles.cardTitle}>Reconcile: waste vs. bill</Text>
+                <Text style={styles.cardTitle}>{t("reconcileTitle")}</Text>
                 <Text style={styles.subtle}>
                   Based on {waste.daysCovered.toFixed(1)} day(s) of logged sensor data. These are
                   estimates from presence + on/off state, not a real power meter -- treat them as
@@ -112,7 +114,7 @@ export function ReportScreen() {
               </Card>
 
               <Card style={styles.card}>
-                <Text style={styles.cardTitle}>AI explanation &amp; next-month plan</Text>
+                <Text style={styles.cardTitle}>{t("aiExplanationTitle")}</Text>
                 {report?.text ? (
                   <>
                     <Text style={styles.reportText}>{report.text}</Text>
@@ -136,7 +138,7 @@ export function ReportScreen() {
 
         {forecasts.length > 0 && (
           <Card style={styles.card}>
-            <Text style={styles.cardTitle}>Next 3 months (forecast)</Text>
+            <Text style={styles.cardTitle}>{t("forecastTitle")}</Text>
             <Text style={styles.subtle}>
               Based on the same months last year, adjusted for this year's trend so far. Always a
               range -- not a prediction you should treat as exact.

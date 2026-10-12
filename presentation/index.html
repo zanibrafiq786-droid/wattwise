@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WattWise Pitch Deck</title>
+<link rel="icon" href="img/favicon.png">
+<style>
+/* Fonts are bundled locally so the deck works offline on demo day */
+@font-face{font-family:Urbanist;src:url(fonts/urbanist-300.woff2) format('woff2');font-weight:300}
+@font-face{font-family:Urbanist;src:url(fonts/urbanist-600.woff2) format('woff2');font-weight:600}
+@font-face{font-family:Urbanist;src:url(fonts/urbanist-700.woff2) format('woff2');font-weight:700 800}
+@font-face{font-family:Figtree;src:url(fonts/figtree-400.woff2) format('woff2');font-weight:300 400}
+@font-face{font-family:Figtree;src:url(fonts/figtree-500.woff2) format('woff2');font-weight:500}
+@font-face{font-family:Figtree;src:url(fonts/figtree-600.woff2) format('woff2');font-weight:600 700}
+
+:root{
+  --bg:#EFEAE4; --card:#FBF9F6; --ink:#2B231E; --muted:#75695F; --line:#E1D8CE; --soft:#F3EEE8;
+  --accent:#EC7632; --accent2:#F6C9A6; --dark:#241D18; --darkline:#3A302A;
+  --teal:#3D847E; --red:#C3402A;
+  --head:Urbanist,system-ui,sans-serif; --body:Figtree,system-ui,sans-serif;
+  --r:20px; --e:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#16120F;overflow:hidden;font-family:var(--body);color:var(--ink)}
+#vp{position:fixed;inset:0;display:grid;place-items:center}
+#stage{width:1920px;height:1080px;position:relative;flex:none;transform-origin:center;background:var(--bg);
+  padding:44px 56px 52px;display:flex;flex-direction:column;overflow:hidden}
+
+/* header */
+#hd{height:56px;flex:none;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:18px}
+#hd .lg{display:flex;align-items:center;gap:12px;font:700 30px var(--head);letter-spacing:-.01em}
+#hd .lg img{height:44px;display:block}
+#hd .sec{font:500 20px var(--body);color:var(--muted)}
+#hd .rt{display:flex;align-items:center;gap:20px}
+#hd .pg{font:600 20px var(--body);color:var(--muted);font-variant-numeric:tabular-nums}
+#hd .pg b{color:var(--ink);font-weight:600}
+#nav{display:flex;gap:6px}
+#nav button{width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:15px;cursor:pointer}
+#nav button:hover{border-color:var(--ink)}
+#bar{position:absolute;left:56px;right:56px;top:99px;height:2px;background:transparent}
+#bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s var(--e)}
+
+/* grid */
+#deck{flex:1;position:relative;margin-top:30px}
+.s{position:absolute;inset:0;display:grid;grid-template-columns:repeat(12,1fr);grid-template-rows:repeat(6,1fr);gap:20px;
+   opacity:0;visibility:hidden;pointer-events:none}
+.s.on{opacity:1;visibility:visible;pointer-events:auto}
+
+/* cards */
+.c{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:40px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center}
+.c.top{justify-content:flex-start}
+.c.pic{padding:0;border:none}
+.c.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.c.plain{background:transparent;border:none;padding:0 4px}
+.c.dark{background:var(--dark);border-color:var(--dark);color:#F3ECE5}
+.c.soft{background:var(--soft)}
+
+/* entrance: a short fade and lift, nothing more */
+.s .c,.s .an{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .6s var(--e);transition-delay:calc(var(--i,0)*.06s + .05s)}
+.s.on .c,.s.on .an{opacity:1;transform:none}
+
+/* type */
+.k{font:600 20px var(--body);color:var(--muted);margin-bottom:18px}
+.c.dark .k{color:#B6A697}
+h1{font:600 140px/.95 var(--head);letter-spacing:-.04em}
+h2{font:600 70px/1.05 var(--head);letter-spacing:-.025em}
+h3{font:600 40px/1.15 var(--head);letter-spacing:-.01em}
+h4{font:600 28px/1.25 var(--head)}
+p{font:400 27px/1.5 var(--body);color:var(--muted)}
+p b{font-weight:600;color:var(--ink)}
+.c.dark p{color:#C9BAAD}.c.dark p b{color:#fff}
+.sm{font:400 22px/1.45 var(--body);color:var(--muted)}
+.c.dark .sm{color:#B6A697}
+.num{font:300 100px/1 var(--head);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+/* Thank-you sign-off */
+.signoff{display:flex;align-items:center;flex-wrap:wrap;gap:22px;margin-top:40px;padding-top:30px;position:relative}
+.signoff::before{content:"";position:absolute;top:0;left:0;width:96px;height:4px;border-radius:4px;background:var(--accent)}
+.so-name{font:700 52px/1 var(--head);letter-spacing:-.02em;color:var(--ink)}
+.so-dot{width:12px;height:12px;border-radius:50%;background:var(--accent)}
+.so-tag{font:500 52px/1 var(--head);letter-spacing:-.01em;color:var(--accent)}
+.tagline{font:500 46px/1.1 var(--head);color:var(--accent);margin-top:14px;letter-spacing:-.01em}
+.team-block{justify-content:flex-start}
+.team-h{margin:0 0 14px}
+.team-row{flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:20px;min-height:0}
+.member{display:flex;flex-direction:column;justify-content:center;padding:28px 32px}
+.m-name{font:600 32px/1.15 var(--head);letter-spacing:-.01em}
+.tag{display:inline-block;font:600 17px var(--body);letter-spacing:.04em;color:var(--red);border:1px solid currentColor;border-radius:6px;padding:4px 9px}
+
+/* tables */
+.tbl{width:100%;border-collapse:collapse}
+.tbl td,.tbl th{padding:26px 0;border-bottom:1px solid var(--line);font:400 25px var(--body);text-align:left;vertical-align:middle}
+.tbl th{font:600 18px var(--body);color:var(--muted);padding-top:0;padding-bottom:16px}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td.r,.tbl th.r{text-align:right;font-variant-numeric:tabular-nums}
+.tbl td b{font-weight:600}
+.tbl img{width:58px;height:58px;object-fit:contain;vertical-align:middle;margin-right:14px}
+
+/* cover photo: the same living room with lights on, then off */
+.room{position:relative;width:100%;height:100%}
+.room img{position:absolute;inset:0}
+.room .lit{animation:lit 10s ease-in-out infinite}
+@keyframes lit{0%,45%{opacity:1}55%,95%{opacity:0}100%{opacity:1}}
+.room .cap{position:absolute;left:0;right:0;bottom:0;padding:26px 30px;color:#fff;background:linear-gradient(0deg,rgba(20,16,13,.8),transparent);font:500 23px var(--body)}
+.room .cap b{font:600 40px var(--head)}
+.room .capline{position:relative;height:32px}
+.room .capline span{position:absolute;left:0;top:0}
+.room .st1{color:var(--accent2);animation:lit 10s ease-in-out infinite}
+.room .st2{color:#9fd3cd;animation:unlit 10s ease-in-out infinite}
+@keyframes unlit{0%,45%{opacity:0}55%,95%{opacity:1}100%{opacity:0}}
+
+/* slab bar */
+.slab{position:relative;height:14px;border-radius:7px;background:linear-gradient(90deg,var(--accent2) 0 80%,var(--red) 80%);margin:30px 0 12px}
+.slab::after{content:"";position:absolute;left:80%;top:-8px;bottom:-8px;width:2px;background:#fff}
+.slabl{display:flex;justify-content:space-between;font:500 19px var(--body);color:#B6A697}
+
+/* wifi scene */
+.scene svg{width:100%;height:auto;display:block;overflow:visible}
+.wave{fill:none;stroke:var(--accent);stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center;animation:wv 3s ease-out infinite}
+.wave:nth-of-type(2){animation-delay:1.5s}
+@keyframes wv{0%{transform:scale(.3);opacity:.6}100%{transform:scale(1.4);opacity:0}}
+.walker{animation:walk 8s ease-in-out infinite}
+@keyframes walk{0%,8%{transform:translateX(0)}46%,54%{transform:translateX(320px)}92%,100%{transform:translateX(0)}}
+
+/* how it works */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:56px;height:100%}
+.step{border-top:3px solid var(--ink);padding-top:26px;display:flex;flex-direction:column}
+.step .n{font:300 150px/1 var(--head);color:var(--accent);margin:10px 0 50px}
+.step h3{margin-bottom:12px}
+.step p{font-size:28px}
+.step .who{margin-top:auto;font:600 20px var(--body);color:var(--muted);padding-top:20px;border-top:1px solid var(--line)}
+
+/* demo */
+.demo{position:relative;width:100%;height:100%;border-radius:var(--r);overflow:hidden}
+.demo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity 1.1s ease}
+.demo .shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(20,16,13,.8),rgba(20,16,13,.05) 62%)}
+.demo .ui{position:absolute;left:40px;top:40px;bottom:40px;width:600px;display:flex;flex-direction:column;gap:14px;color:#fff}
+.dstate{font:500 25px var(--body);color:#E8DCD1;display:flex;align-items:center;gap:10px}
+.dstate i{width:10px;height:10px;border-radius:50%;background:var(--accent);transition:.4s}
+.dname{font:600 100px/.95 var(--head);letter-spacing:-.035em;margin:4px 0 8px}
+.dpills{display:flex;gap:8px}
+.dp{border-radius:8px;padding:10px 16px;font:500 22px var(--body);background:rgba(255,255,255,.08);color:#A99A8D;transition:.4s}
+.dp.lit{background:rgba(246,164,103,.2);color:#F6C9A6}
+.dalert{margin-top:auto;background:var(--card);color:var(--ink);border-radius:16px;padding:22px 24px;opacity:0;transform:translateY(18px);transition:.5s var(--e)}
+.dalert.show{opacity:1;transform:none}
+.dalert h4{margin-bottom:6px}
+.dalert p{font-size:22px;line-height:1.4}
+.dbtns{display:flex;gap:8px;margin-top:14px}
+.dbtns span{border-radius:10px;padding:12px 20px;font:600 19px var(--body);background:var(--ink);color:#fff;transition:.25s}
+.dbtns span.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.dbtns span.press{transform:scale(.94);background:var(--teal)}
+.timer{font:300 90px/1 var(--head);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.motion{width:100%;height:130px;display:block;border-radius:12px;background:var(--soft)}
+.tl{display:flex;flex-direction:column}
+.tli{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);color:#B8ACA1;transition:.3s;font:500 23px var(--body)}
+.tli:last-child{border-bottom:none}
+.tli b{font-weight:600;width:28px;font-variant-numeric:tabular-nums}
+.tli.cur{color:var(--ink)}.tli.cur b{color:var(--accent)}
+.tli.done{color:var(--muted)}
+
+/* alerts mock */
+.mock{border:1px solid var(--line);border-radius:16px;padding:24px 26px;background:#fff}
+.mock .hd{display:flex;justify-content:space-between;font:500 19px var(--body);color:var(--muted);margin-bottom:8px}
+.mock h4{margin-bottom:6px}
+.mock p{font-size:23px;line-height:1.45}
+.log{margin-top:22px}
+.log div{display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);font:400 22px var(--body);color:var(--muted)}
+.log div:last-child{border-bottom:none}
+.log b{font-weight:600}
+.ok{color:var(--teal)}.no{color:var(--red)}
+
+/* range bars */
+.rb{margin-bottom:56px}
+.rb .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.rb .t > span{display:flex;align-items:center;gap:14px;font:600 30px var(--head)}
+.rb .t > span img{width:46px;height:46px;object-fit:contain}
+.rb .t b{font:500 28px var(--body);font-variant-numeric:tabular-nums}
+.rtrk{position:relative;height:30px;border-radius:6px;background:var(--soft)}
+.rtrk i{position:absolute;top:0;bottom:0;border-radius:6px;width:0;transition:width 1s var(--e);transition-delay:calc(var(--j)*.12s + .4s)}
+.rtrk .lo{left:0;background:var(--accent)}
+.rtrk .hi{left:0;background:var(--accent2)}
+.s.on .rtrk .lo{width:var(--lo)}.s.on .rtrk .hi{width:var(--hi)}
+.legend{display:flex;gap:24px;font:400 19px var(--body);color:var(--muted)}
+.legend i{display:inline-block;width:18px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle}
+ol.plan{list-style:none;counter-reset:p}
+ol.plan li{counter-increment:p;display:flex;gap:16px;padding:14px 0;border-bottom:1px solid var(--darkline);font:400 26px/1.4 var(--body);color:#E8DCD1}
+ol.plan li:last-child{border-bottom:none}
+ol.plan li::before{content:counter(p);font:600 26px var(--head);color:var(--accent);width:18px;flex:none}
+
+/* AI slide */
+.data{font:500 21px/1.6 ui-monospace,Consolas,monospace;background:var(--dark);color:#E8D9CC;border-radius:12px;padding:20px 24px;min-height:220px}
+.data .kk{color:#F6C9A6}.data .vv{color:#9fd3cd}
+.chat{display:flex;flex-direction:column;gap:12px}
+.msg{max-width:94%;border-radius:14px;padding:16px 20px;font:400 23px/1.45 var(--body)}
+.msg.u{align-self:flex-end;background:var(--ink);color:#fff}
+.msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line);min-height:56px}
+.caret{display:inline-block;width:2px;height:20px;background:var(--accent);vertical-align:middle;margin-left:2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- slide 10: interactive architecture ---------- */
+.net{position:relative;flex:1;margin-top:10px}
+.net svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.net line{stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke;transition:stroke .3s}
+.net line.dash{stroke-dasharray:6 6}
+.net line.hot{stroke:var(--accent);stroke-width:3;stroke-dasharray:10 8;animation:flow .7s linear infinite}
+.net line.hot.rev{animation-direction:reverse}
+@keyframes flow{to{stroke-dashoffset:-18}}
+.node{position:absolute;transform:translate(-50%,-50%);width:216px;padding:18px 20px;border-radius:14px;background:#fff;border:1.5px solid var(--line);
+  cursor:pointer;text-align:left;font-family:var(--body);transition:border-color .2s,box-shadow .2s;z-index:1}
+.node:hover{border-color:var(--muted)}
+.node.sel{border-color:var(--accent);box-shadow:0 0 0 4px rgba(236,118,50,.14)}
+.node b{display:block;font:600 25px var(--head);color:var(--ink)}
+.node span{font:400 18px var(--body);color:var(--muted)}
+.elab{position:absolute;transform:translate(-50%,-50%);font:500 17px var(--body);color:var(--muted);background:var(--card);padding:2px 8px;white-space:nowrap}
+.pkt{display:none}
+/* arrowhead at the destination end of the active line, just outside the box */
+.net svg.arr{position:absolute;inset:auto;width:16px;height:16px;margin:-8px 0 0 -16px;overflow:visible;transform-origin:100% 50%;fill:var(--accent);opacity:0;pointer-events:none;transition:opacity .2s}
+.net svg.arr.on{opacity:1}
+.ctl{display:flex;align-items:center;gap:10px;margin-top:18px}
+.btn{border:1px solid var(--ink);background:var(--ink);color:#fff;border-radius:10px;padding:13px 24px;font:600 20px var(--body);cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.35;cursor:default}
+.stepc{font:500 20px var(--body);color:var(--muted);margin-left:8px;font-variant-numeric:tabular-nums}
+.det h3{margin-bottom:6px}
+.det .sub{font:500 21px var(--body);color:var(--accent);margin-bottom:22px}
+.det p{font-size:25px;margin-bottom:24px}
+.det .lbl2{font:600 18px var(--body);color:#B6A697;margin-bottom:8px}
+.det ul{list-style:none;margin-bottom:22px}
+.det li{font:500 20px/1.4 ui-monospace,Consolas,monospace;color:#F6C9A6;padding:6px 0;border-bottom:1px solid var(--darkline)}
+.det li:last-child{border-bottom:none}
+.det .trace{font:500 30px/1.4 var(--body);color:#fff}
+
+/* real / estimated / simulated */
+.col3{border-top:3px solid currentColor;padding-top:24px}
+.col3 h3{margin-bottom:20px}
+.col3 ul{list-style:none}
+.col3 li{font:400 25px/1.45 var(--body);color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line)}
+.col3 li:last-child{border-bottom:none}
+
+/* ---------- motion ---------- */
+/* headlines slide up out of a mask */
+.s.on h1,.s.on h2{animation:hd .9s var(--e) .15s both}
+@keyframes hd{from{clip-path:inset(0 0 100% 0);transform:translateY(40px)}to{clip-path:inset(0 0 -20% 0);transform:none}}
+/* children of [data-stagger] rise in one after another (delays set in JS) */
+.rv{opacity:0}
+.s.on .rv{animation:rv .65s var(--e) both;animation-delay:var(--d,0s)}
+@keyframes rv{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+/* logo turns into place */
+.s.on .spin-in{animation:spinin 1.1s var(--e) both}
+@keyframes spinin{from{opacity:0;transform:rotate(-140deg) scale(.4)}to{opacity:1;transform:none}}
+/* slow zoom on photos */
+.s.on .zoom{animation:kb 18s ease-in-out infinite alternate}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.08)}}
+/* closing photo: lights go off */
+.s.on .goes-off{animation:goesoff 1.6s ease 1.4s forwards}
+@keyframes goesoff{to{opacity:0}}
+/* slab bar fills up and crosses 200, then repeats */
+.slab{background:var(--darkline)}
+.slab i{position:absolute;left:0;top:0;bottom:0;border-radius:7px;width:0;background:linear-gradient(90deg,var(--accent2) 0,var(--accent2) 76%,var(--red) 84%)}
+.s.on .slab i{animation:slab 4.5s var(--e) .6s infinite}
+@keyframes slab{0%{width:0}60%,90%{width:100%;opacity:1}100%{width:100%;opacity:0}}
+/* step and row highlight that walks through a list (class set in JS) */
+.step{position:relative;border-top-color:var(--line)}
+.step::before{content:"";position:absolute;left:0;top:-3px;height:3px;width:0;background:var(--accent)}
+.step.cur::before{width:100%;transition:width 2.4s linear}
+.step .n{color:var(--accent2);transition:color .3s,transform .4s var(--e);transform-origin:left bottom}
+.step.cur .n{color:var(--accent);transform:scale(1.12)}
+.tbl tr.cy td{transition:background .3s}
+.tbl tr.cy td:first-child{padding-left:14px}
+.tbl tr.cur td{background:var(--soft)}
+/* the alert button gets pressed every few seconds */
+.s.on .press-loop{animation:press 3.2s ease-in-out 1.6s infinite}
+@keyframes press{0%,70%,100%{transform:none;background:var(--ink)}76%{transform:scale(.9);background:var(--teal)}88%{transform:none;background:var(--teal)}}
+/* coloured rule above each column draws in */
+.col3{border-top:none;position:relative}
+.col3::before{content:"";position:absolute;left:0;top:0;height:4px;width:0;background:currentColor;border-radius:2px}
+.s.on .col3::before{animation:draw 1s var(--e) .4s forwards}
+@keyframes draw{to{width:100%}}
+
+/* who it's for */
+.who-n{font:300 110px/1 var(--head);color:var(--accent);margin-bottom:20px}
+.later{display:inline-block;font:600 16px var(--body);color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:3px 9px;margin-left:10px;vertical-align:middle}
+.need{list-style:none;margin-top:auto}
+.need li{padding:18px 0;border-top:1px solid var(--line);font:400 23px/1.45 var(--body);color:var(--ink)}
+.need li b{display:block;font:600 17px var(--body);color:var(--accent);margin-bottom:4px}
+/* reserve two lines for the last row so the lists line up across all three cards */
+.need li b{line-height:20px}
+.need li:last-child{min-height:130px;box-sizing:border-box}
+/* Sense / Decide / Alert / Explain paragraphs */
+.step p{text-align:justify;hyphens:auto;-webkit-hyphens:auto}
+/* how the AI works */
+.aj-head{display:flex;align-items:baseline;justify-content:space-between;gap:40px}
+.aj-head p{max-width:760px;text-align:right}
+.ajs{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;height:100%}
+.aj{padding:34px 30px}
+.aj-n{font:300 90px/1 var(--head);color:var(--accent);margin-bottom:auto}
+.aj h3{font-size:34px}
+.aj p{min-height:5.8em}
+.aj-w{display:inline-block;align-self:flex-start;font:700 15px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);
+  border:1px solid currentColor;border-radius:99px;padding:5px 12px;margin:14px 0 18px}
+ol.pipe{list-style:none;counter-reset:q;margin-top:30px}
+ol.pipe li{counter-increment:q;display:grid;grid-template-columns:54px 1fr;padding:18px 0;border-top:1px solid var(--line)}
+ol.pipe li::before{content:counter(q);grid-row:span 2;font:300 44px/1 var(--head);color:var(--accent)}
+ol.pipe b{font:600 26px var(--head)}
+ol.pipe span{font:400 21px/1.45 var(--body);color:var(--muted)}
+/* business model */
+.bm .price{font:600 22px var(--body);color:var(--accent);margin:6px 0 10px}
+.c.rev.bm{justify-content:flex-start}
+.rev.bm .n{margin-bottom:40px}
+.rev .n{font:300 90px/1 var(--head);color:var(--accent2);margin-bottom:auto}
+.rev h3{margin-bottom:10px}
+.eq{display:flex;align-items:baseline;gap:22px;flex-wrap:wrap}
+.eq span{font:300 54px/1 var(--head);letter-spacing:-.02em;color:#fff;white-space:nowrap}
+.eq span small{font:400 20px var(--body);color:#B6A697;margin-left:6px}
+.eq i{font:300 40px var(--head);color:#7E6E61;font-style:normal}
+.eq .res{color:var(--accent)}
+/* team placeholders: dashed so they are obvious until real names go in */
+.ph{border:2px dashed var(--accent2);border-radius:10px;padding:6px 12px;color:var(--muted);display:inline-block}
+.avatar{width:150px;height:150px;border-radius:50%;background:var(--accent);margin:30px 0 60px;display:grid;place-items:center;font:600 50px var(--head);color:#fff}
+
+/* ?still in the URL skips entrance transitions (used only for screenshot checks) */
+.still .s .c,.still .s .an,.still .rtrk i{transition:none!important}
+.still .rv,.still h1,.still h2,.still .spin-in{animation:none!important;opacity:1!important}
+.still .col3::before{width:100%}
+</style>
+</head>
+<body>
+<div id="vp"><div id="stage">
+
+  <div id="hd">
+    <div class="lg"><img src="img/logo.png" alt="">WattWise</div>
+    <div class="sec" id="sec"></div>
+    <div class="rt"><div class="pg" id="pg"></div>
+      <div id="nav"><button id="prev" aria-label="Previous">←</button><button id="next" aria-label="Next">→</button></div></div>
+  </div>
+  <div id="bar"><i id="barI"></i></div>
+
+  <div id="deck">
+
+    <!-- 1 COVER -->
+    <section class="s" data-sec="AI 1st developer bootcamp hackathon">
+      <div class="c" style="grid-column:1/7;grid-row:1/5;--i:0">
+        <img class="spin-in" src="img/logo.png" alt="" style="width:110px;margin-bottom:30px">
+        <h1>WattWise</h1>
+        <div class="tagline" lang="ur-Latn">Bijli Bachao</div>
+        <p style="margin-top:22px;max-width:820px;font-size:30px">Wi-Fi motion sensing tells when a room is empty, room sensors tell if the fan, light or AC is still on, and AI reads your bill, explains what the waste cost and plans how to cut it.</p>
+      </div>
+      <div class="c pic" style="grid-column:7/13;grid-row:1/7;--i:1">
+        <div class="room zoom">
+          <img src="img/room-living-off.jpg" alt="">
+          <img class="lit" src="img/room-living-on.jpg" alt="Living room">
+          <div class="cap"><b>Living room</b>
+            <div class="capline"><span class="st1">Empty · lamp and AC on</span><span class="st2">Empty · everything off</span></div></div>
+        </div>
+      </div>
+      <div class="c plain team-block" style="grid-column:1/7;grid-row:5/7;--i:2">
+        <h3 class="team-h">Team</h3>
+        <div class="team-row"><div class="c member" style="--i:2"><div class="m-name">Zainab</div></div><div class="c member" style="--i:3"><div class="m-name">Hafiz Tajammul Raza</div></div><div class="c member" style="--i:4"><div class="m-name">Laiba Fatima</div></div></div>
+      </div>
+    </section>
+
+    <!-- 2 PROBLEM -->
+    <section class="s" data-sec="The problem">
+      <div class="c" style="grid-column:1/5;grid-row:1/7;--i:0">
+        <div class="k">The problem</div>
+        <h2>Appliances keep running after people leave the room.</h2>
+        <p style="margin-top:24px">The bill shows up a month later as one total. It doesn't say which room or which habit the units came from, so nobody knows what to change.</p>
+      </div>
+      <div class="c" style="grid-column:5/9;grid-row:1/7;--i:1">
+        <div class="k">Cost of leaving it on for one hour</div>
+        <table class="tbl" data-stagger=".4">
+          <tr><th>Appliance</th><th class="r">Watts</th><th class="r">Rs / hour</th></tr>
+          <tr><td><img src="img/dev-ac.png" alt=""><b>AC</b></td><td class="r">1,500</td><td class="r"><b data-count="49.5" data-dec="1" data-delay="900">49.5</b></td></tr>
+          <tr><td><img src="img/dev-fan.png" alt=""><b>Ceiling fan</b></td><td class="r">75</td><td class="r"><b data-count="2.5" data-dec="1" data-delay="1000">2.5</b></td></tr>
+          <tr><td><img src="img/dev-light.png" alt=""><b>Light</b></td><td class="r">12</td><td class="r"><b data-count="0.4" data-dec="1" data-delay="1100">0.4</b></td></tr>
+        </table>
+        <p class="sm" style="margin-top:22px">At Rs 33 per unit, the app's default rate. Users can change the rate and wattages.</p>
+      </div>
+      <div class="c dark" style="grid-column:9/13;grid-row:1/7;--i:2">
+        <div class="k">Slab tariffs</div>
+        <h3>Small overruns get expensive.</h3>
+        <p class="sm" style="margin-top:14px">Household tariffs in Pakistan are charged in slabs. Going over 200 units in a month can move a protected household onto a higher rate.</p>
+        <div class="slab"><i></i></div>
+        <div class="slabl"><span>0</span><span style="margin-left:62%">200</span><span>units</span></div>
+      </div>
+    </section>
+
+    <!-- WHO IT'S FOR -->
+    <section class="s" data-sec="Who it's for">
+      <div class="c plain" style="grid-column:1/13;grid-row:1/2;--i:0">
+        <h2>Who it's for</h2>
+      </div>
+      <div class="c top" style="grid-column:1/5;grid-row:2/7;--i:1">
+        <div class="who-n">1</div>
+        <h3>The person who pays the bill</h3>
+        <p class="sm" style="margin-top:10px">Sees one total each month and can't tell which room or habit caused it.</p>
+        <ul class="need" data-stagger=".6">
+          <li><b>Needs</b>To know where the units went</li>
+          <li><b>Gets</b>A monthly report per appliance, checked against the real bill</li>
+        </ul>
+      </div>
+      <div class="c top" style="grid-column:5/9;grid-row:2/7;--i:2">
+        <div class="who-n">2</div>
+        <h3>Homes close to the 200-unit slab</h3>
+        <p class="sm" style="margin-top:10px">A few wasted units can push the whole month onto a higher rate.</p>
+        <ul class="need" data-stagger=".75">
+          <li><b>Needs</b>A warning while there's still time to act</li>
+          <li><b>Gets</b>An alert the moment a room is empty with something on</li>
+        </ul>
+      </div>
+      <div class="c top" style="grid-column:9/13;grid-row:2/7;--i:3">
+        <div class="who-n">3</div>
+        <h3>Hostels, offices and schools <span class="later">Later</span></h3>
+        <p class="sm" style="margin-top:10px">Shared rooms where nobody feels responsible for switching things off.</p>
+        <ul class="need" data-stagger=".9">
+          <li><b>Needs</b>To see which rooms are empty with power on</li>
+          <li><b>Gets</b>One sensor per room, all in one app</li>
+        </ul>
+      </div>
+    </section>
+
+
+    <!-- 4 HOW IT WORKS -->
+    <section class="s" data-sec="Our solution">
+      <div class="c plain" style="grid-column:1/13;grid-row:1/2;--i:0">
+        <h2>Our solution in four steps</h2>
+      </div>
+      <div class="an" style="grid-column:1/13;grid-row:2/7;--i:1">
+        <div class="steps" data-stagger=".25" data-cycle="2600">
+          <div class="step cy"><div class="n">1</div><h3>Sense</h3>
+            <p>Every second the ESP32 reads how much the router's Wi-Fi signal wobbles, plus light, fan vibration, temperature and humidity.</p>
+            <div class="who">ESP32, no camera or microphone</div></div>
+          <div class="step cy"><div class="n">2</div><h3>Decide</h3>
+            <p>A two-step calibration learns this room's line between empty and walking. Someone sitting still isn't marked empty.</p>
+            <div class="who">Learned for each room</div></div>
+          <div class="step cy"><div class="n">3</div><h3>Alert</h3>
+            <p>Empty for a few minutes with the fan, light or AC on? The phone shows an alert with the rupees per hour.</p>
+            <div class="who">Firebase and the phone app</div></div>
+          <div class="step cy"><div class="n">4</div><h3>Explain</h3>
+            <p>AI reads the bill photo, answers questions, explains the month and advises on solar, using only your own data.</p>
+            <div class="who">Gemini, on our cloud server</div></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- 6 DEMO -->
+    <section class="s" data-sec="Demo">
+      <div class="c pic" style="grid-column:1/9;grid-row:1/7;--i:0">
+        <div class="demo" id="demo">
+          <img id="dOff" src="img/room-living-off.jpg" alt="">
+          <img id="dOn" src="img/room-living-on.jpg" alt="">
+          <div class="shade"></div>
+          <div class="ui">
+            <div class="dstate"><i id="dDot"></i><span id="dState">Walking</span></div>
+            <div class="dname">Living room</div>
+            <div class="dpills"><span class="dp lit" id="pL">Lamp 12 W</span><span class="dp lit" id="pF">Fan 75 W</span><span class="dp lit" id="pA">AC 1.5 kW</span></div>
+            <div class="dalert" id="dAlert">
+              <h4>Living room has been empty for 1 minute</h4>
+              <p>The lamp, fan and AC are on. That's about Rs 52 an hour.</p>
+              <div class="dbtns"><span id="dAct">I switched it off</span><span class="ghost">Ignore</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="c top" style="grid-column:9/13;grid-row:1/7;--i:1;padding:34px">
+        <div class="k">Demo mode, 1 minute threshold</div>
+        <div class="sm">Empty for</div>
+        <div class="timer" id="dTimer">0:00</div>
+        <svg class="motion" preserveAspectRatio="none" viewBox="0 0 400 130" style="margin:18px 0 10px"><polyline id="dLine" fill="none" stroke="#EC7632" stroke-width="2.5" stroke-linejoin="round" points=""/></svg>
+        <div class="tl">
+          <div class="tli"><b>1</b><span>Someone is in the room</span></div>
+          <div class="tli"><b>2</b><span>They leave and the signal goes flat</span></div>
+          <div class="tli"><b>3</b><span>Still empty with things on, so an alert is sent</span></div>
+          <div class="tli"><b>4</b><span>One tap, and the response is logged</span></div>
+        </div>
+        <p class="sm" style="margin-top:auto">12 W + 75 W + 1,500 W at Rs 33 per unit is about Rs 52 an hour.</p>
+      </div>
+    </section>
+
+
+
+    <!-- 9 AI: FIVE JOBS -->
+    <section class="s" data-sec="How the AI works">
+      <div class="c plain" style="grid-column:1/13;grid-row:1/2;--i:0">
+        <div class="aj-head"><h2>Five jobs for AI</h2><p class="sm">The numbers come from real data and fixed maths. AI senses, reads, explains and advises.</p></div>
+      </div>
+      <div class="c plain" style="grid-column:1/13;grid-row:2/7;--i:1">
+        <div class="ajs" data-stagger=".35">
+          <div class="c top aj"><div class="aj-n">1</div><h3>Wi-Fi presence</h3><div class="aj-w">ESP32 + phone app</div><p class="sm">Turns Wi-Fi signal wobble into empty, sitting or walking, using a threshold learned for your room.</p></div>
+          <div class="c top aj"><div class="aj-n">2</div><h3>Bill scanner</h3><div class="aj-w">Gemini vision</div><p class="sm">Reads a photo of the bill and fills in the 12-month history in about 7 seconds.</p></div>
+          <div class="c top aj"><div class="aj-n">3</div><h3>AI assistant</h3><div class="aj-w">Gemini, grounded</div><p class="sm">Answers questions about your bill in English, Urdu or Roman Urdu, from your own data only.</p></div>
+          <div class="c top aj"><div class="aj-n">4</div><h3>Month-end plan</h3><div class="aj-w">Our maths + Gemini</div><p class="sm">Our code works out the waste as a range. Gemini explains it and writes a 3 to 5 step plan.</p></div>
+          <div class="c top aj"><div class="aj-n">5</div><h3>Solar advisor</h3><div class="aj-w">Simulation + Gemini</div><p class="sm">Simulates 8,760 hours of real sunlight for your location. Gemini recommends one plan.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9b AI: HONEST -->
+    <section class="s" data-sec="Keeping the AI honest">
+      <div class="c top" style="grid-column:1/5;grid-row:1/7;--i:0">
+        <div class="k">Keeping the AI honest</div>
+        <h2 style="font-size:52px">AI never invents a number.</h2>
+        <ol class="pipe" data-stagger=".45">
+          <li><b>Ranges</b><span>Waste, savings and payback are shown as ranges and called estimates.</span></li>
+          <li><b>Grounded</b><span>The assistant only sees your bills, slab status, forecast, appliances and waste log.</span></li>
+          <li><b>Checked</b><span>Bill rows are validated. Months in the future are rejected.</span></li>
+          <li><b>Private</b><span>No camera or microphone. The bill photo is deleted and account numbers are never read.</span></li>
+        </ol>
+      </div>
+      <div class="c top" style="grid-column:5/9;grid-row:1/7;--i:1">
+        <div class="k">1. A real bill scan</div>
+        <div class="data" id="billdata"></div>
+        <p class="sm" style="margin-top:18px">The month is taken from the bill's history table, not the due date. Credit bills from solar net-metering are kept, not thrown away.</p>
+      </div>
+      <div class="c soft top" style="grid-column:9/13;grid-row:1/7;--i:2">
+        <div class="k">2. A real answer from the app</div>
+        <div class="chat">
+          <div class="msg u">Why is my bill so high this month?</div>
+          <div class="msg a" id="aitype"></div>
+        </div>
+        <p class="sm" style="margin-top:auto">The Gemini key lives on our server, not in the app.</p>
+      </div>
+    </section>
+
+    <!-- 10 ARCHITECTURE (interactive) -->
+    <section class="s" data-sec="Architecture">
+      <div class="c top" id="archbox" style="grid-column:1/9;grid-row:1/7;--i:0;padding:34px 40px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline">
+          <h3>How the parts connect</h3>
+          <span class="sm">Click any part</span>
+        </div>
+        <div class="net" id="net">
+          <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+            <line id="e-esp-fb" x1="11" y1="30" x2="50" y2="30"/>
+            <line id="e-fb-app" x1="50" y1="30" x2="89" y2="30"/>
+            <line id="e-fb-brain" x1="50" y1="30" x2="50" y2="78"/>
+            <line id="e-brain-gem" x1="50" y1="78" x2="89" y2="78"/>
+                      </svg>
+          <span class="elab" style="left:30.5%;top:30%">state, events, alerts</span>
+          <span class="elab" style="left:69.5%;top:30%">live listeners</span>
+          <span class="elab" style="left:50%;top:54%">requests in, results back</span>
+          <span class="elab" style="left:69.5%;top:78%">your data in, text out</span>
+                    <button class="node" data-n="esp" style="left:11%;top:30%"><b>ESP32</b><span>Living room sensor</span></button>
+          <button class="node" data-n="fb" style="left:50%;top:30%"><b>Firebase</b><span>Realtime Database</span></button>
+          <button class="node" data-n="app" style="left:89%;top:30%"><b>Phone app</b><span>Expo React Native</span></button>
+          <button class="node" data-n="brain" style="left:50%;top:78%"><b>Cloud brain</b><span>Vercel</span></button>
+          <button class="node" data-n="gem" style="left:89%;top:78%"><b>Gemini</b><span>Google AI</span></button>
+          <div class="pkt" id="pkt"></div>
+          <svg class="arr" id="arr" viewBox="0 0 14 14" aria-hidden="true"><path d="M0 1 L13 7 L0 13 Z"/></svg>
+        </div>
+        <div class="ctl">
+          <button class="btn" id="tPlay">Follow one alert</button>
+          <button class="btn ghost" id="tPrev">Back</button>
+          <button class="btn ghost" id="tNext">Next step</button>
+          <span class="stepc" id="tCount"></span>
+        </div>
+      </div>
+      <div class="c dark top det" id="det" style="grid-column:9/13;grid-row:1/7;--i:1;padding:36px"></div>
+    </section>
+
+
+    <!-- BUSINESS MODEL -->
+    <section class="s" data-sec="Business model">
+      <div class="c plain" style="grid-column:1/13;grid-row:1/2;--i:0">
+        <h2>How WattWise makes money</h2>
+      </div>
+      <div class="c rev bm" style="grid-column:1/4;grid-row:2/5;--i:1">
+        <div class="n">1</div>
+        <h3>Sensor kit</h3>
+        <div class="price">from Rs 4,999 per room</div>
+        <p class="sm">ESP32 with light, fan-vibration and temperature sensors. Sold close to cost, in installments, through electricians.</p>
+      </div>
+      <div class="c rev bm" style="grid-column:4/7;grid-row:2/5;--i:2">
+        <div class="n">2</div>
+        <h3>WattWise Plus</h3>
+        <div class="price">Rs 299 a month</div>
+        <p class="sm">Free app shows live rooms and alerts. Plus adds the bill scanner, month-end AI plan, AI assistant and solar advisor.</p>
+      </div>
+      <div class="c rev bm" style="grid-column:7/10;grid-row:2/5;--i:3">
+        <div class="n">3</div>
+        <h3>For buildings</h3>
+        <div class="price">Rs 150 per room a month</div>
+        <p class="sm">Hostels, offices, schools and hotels. One dashboard for every room. A 40-room hostel is Rs 6,000 a month.</p>
+      </div>
+      <div class="c rev bm" style="grid-column:10/13;grid-row:2/5;--i:4">
+        <div class="n">4</div>
+        <h3>Partner leads</h3>
+        <div class="price">Paid per lead</div>
+        <p class="sm">The solar advisor already sizes a system from real bills and location. Installers pay for those leads.</p>
+      </div>
+      <div class="c dark" style="grid-column:1/13;grid-row:5/7;--i:5">
+        <div class="k">Why a home pays Rs 299: one AC left on in an empty room</div>
+        <div class="eq" data-stagger=".7">
+          <span><b data-count="1" data-delay="700">1</b><small>hour a day</small></span><i>×</i>
+          <span><b data-count="30" data-delay="900">30</b><small>days</small></span><i>×</i>
+          <span><b data-count="1.5" data-dec="1" data-delay="1100">1.5</b><small>kW</small></span><i>=</i>
+          <span><b data-count="45" data-delay="1300">45</b><small>units</small></span><i>≈</i>
+          <span class="res">Rs <b data-count="1485" data-delay="1500">1485</b><small>a month, about 5× the plan</small></span>
+        </div>
+        <p class="sm" style="margin-top:18px">At the app's default Rs 33 per unit. Prices are our proposal and the kit price is an estimate from component costs; none of it has been tested with customers yet.</p>
+      </div>
+    </section>
+
+
+    <!-- 13 THANK YOU -->
+    <section class="s" data-sec="Thank you">
+      <div class="c" style="grid-column:1/8;grid-row:1/7;--i:0">
+        <img class="spin-in" src="img/logo.png" alt="" style="width:130px;margin-bottom:36px">
+        <h1>Thank you</h1>
+        <div class="signoff"><span class="so-name">WattWise</span><span class="so-dot"></span><span class="so-tag" lang="ur-Latn">Bijli Bachao</span></div>
+      </div>
+      <div class="c pic" style="grid-column:8/13;grid-row:1/7;--i:1">
+        <div class="room">
+          <img src="img/room-living-off.jpg" alt="Living room with everything switched off">
+          <img class="goes-off" src="img/room-living-on.jpg" alt="">
+          <div class="cap"><b>Living room</b><div style="color:#9fd3cd">Empty · everything off</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div></div>
+
+<script>
+(function(){
+  if(/still/.test(location.search))document.documentElement.classList.add('still');
+  const stage=document.getElementById('stage'),slides=[...document.querySelectorAll('.s')];
+  const sec=document.getElementById('sec'),pg=document.getElementById('pg'),barI=document.getElementById('barI');
+  let cur=0;
+  const STILL=/still/.test(location.search);
+
+  /* give each child of a [data-stagger] box an increasing delay */
+  document.querySelectorAll('[data-stagger]').forEach(box=>{
+    const base=parseFloat(box.dataset.stagger)||.3;
+    const kids=box.tagName==='TABLE'?[...box.rows]:[...box.children];
+    kids.forEach((el,i)=>{el.classList.add('rv');el.style.setProperty('--d',(base+i*.13)+'s');});
+  });
+
+  /* [data-cycle] boxes: move a .cur highlight through their .cy items while the slide is shown */
+  let cycT=[];
+  function cyclers(sl){
+    cycT.forEach(clearInterval);cycT=[];
+    document.querySelectorAll('.cy.cur').forEach(x=>x.classList.remove('cur'));
+    sl.querySelectorAll('[data-cycle]').forEach(box=>{
+      const items=[...box.querySelectorAll('.cy')];let k=-1;
+      const next=()=>{items.forEach(x=>x.classList.remove('cur'));k=(k+1)%items.length;items[k].classList.add('cur');};
+      setTimeout(()=>{if(slides[cur]!==sl)return;next();cycT.push(setInterval(next,+box.dataset.cycle));},1300);
+    });
+  }
+
+  /* count numbers up from zero */
+  function counters(sl){
+    sl.querySelectorAll('[data-count]').forEach(el=>{
+      const to=parseFloat(el.dataset.count),dec=+el.dataset.dec||0,delay=+el.dataset.delay||400,dur=1300,t0=performance.now();
+      const fmt=v=>to>=1000?Math.round(v).toLocaleString('en-US'):v.toFixed(dec);
+      if(STILL){el.textContent=fmt(to);return;}
+      el.textContent=fmt(0);
+      (function tick(now){const k=Math.min(1,Math.max(0,(now-t0-delay)/dur)),e=1-Math.pow(1-k,3);
+        el.textContent=fmt(to*e);if(k<1&&slides[cur]===sl)requestAnimationFrame(tick);else el.textContent=fmt(to);})(t0);
+    });
+  }
+  const idx=sel=>{const el=document.querySelector(sel);return el?slides.indexOf(el.closest('.s')):-1;};
+
+  /* scale the 1920x1080 stage to fit any screen */
+  function fit(){stage.style.transform='scale('+Math.min(innerWidth/1920,innerHeight/1080)+')';}
+  addEventListener('resize',fit);fit();
+
+  /* ---- slide 3: signal line follows the walking person ---- */
+  const WIFI=idx('#mline');
+  (function(){
+    const line=document.getElementById('mline'),st=document.getElementById('mstate'),N=120,buf=new Array(N).fill(0),t0=performance.now();
+    (function frame(now){
+      if(cur===WIFI){
+        const k=((now-t0)/8000)%1;                 // same 8 s cycle as the CSS walker
+        const moving=(k>.08&&k<.46)||(k>.54&&k<.92);
+        buf.push((moving?1:.08)*(Math.sin(now/90)*.5+Math.sin(now/37)*.35+(Math.random()-.5)*.6));buf.shift();
+        line.setAttribute('points',buf.map((v,i)=>(20+i*860/(N-1))+','+(560-Math.abs(v)*120-4)).join(' '));
+        st.textContent=moving?'Active: someone is moving':'Still: signal is calm';
+      }
+      requestAnimationFrame(frame);
+    })(t0);
+  })();
+
+  /* ---- slide 6: demo, a 16 s scripted loop ---- */
+  const DEMO=idx('#demo');
+  const demo=(function(){
+    const $=id=>document.getElementById(id);
+    const on=$('dOn'),state=$('dState'),dot=$('dDot'),alert=$('dAlert'),act=$('dAct'),timer=$('dTimer'),line=$('dLine');
+    const pills=['pL','pF','pA'].map($),steps=[...document.querySelectorAll('.tli')];
+    const N=80,buf=new Array(N).fill(0);let t0=0,last=-1,raf=0;
+    const setStep=k=>steps.forEach((s,i)=>{s.classList.toggle('cur',i===k);s.classList.toggle('done',i<k);});
+    function phase(p){
+      if(p===0){on.style.opacity=1;state.textContent='Walking';dot.style.background='#EC7632';
+        alert.classList.remove('show');act.classList.remove('press');pills.forEach(x=>x.classList.add('lit'));setStep(0);}
+      if(p===1){state.textContent='Sitting';dot.style.background='#9fd3cd';setStep(1);}
+      if(p===2){state.textContent='Empty';dot.style.background='rgba(255,255,255,.4)';}
+      if(p===3){alert.classList.add('show');setStep(2);}
+      if(p===4){act.classList.add('press');setStep(3);}
+      if(p===5){alert.classList.remove('show');on.style.opacity=0;pills.forEach(x=>x.classList.remove('lit'));state.textContent='Empty, everything off';}
+    }
+    const at=[0,3,5,9,12,13];                       // second at which each phase starts
+    function tick(now){
+      const s=((now-t0)/1000)%16;
+      let p=0;at.forEach((a,i)=>{if(s>=a)p=i;});
+      if(p!==last){if(p===0&&last!==-1)buf.fill(0);phase(p);last=p;}
+      const e=s<5?0:Math.min(60,Math.round((s-5)/4*60));   // 4 real seconds = 1 demo minute
+      timer.textContent=e===60?'1:00':'0:'+String(e).padStart(2,'0');
+      const amp=s<3?1:s<5?.35:.05;
+      buf.push(amp*(Math.sin(now/80)*.5+(Math.random()-.5)*.8));buf.shift();
+      line.setAttribute('points',buf.map((v,i)=>(10+i*380/(N-1))+','+(110-Math.abs(v)*75)).join(' '));
+      raf=requestAnimationFrame(tick);
+    }
+    return run=>{cancelAnimationFrame(raf);if(run){t0=performance.now();last=-1;raf=requestAnimationFrame(tick);}};
+  })();
+
+  /* ---- slide 9: bill data rows + typed answer ---- */
+  const AI=idx('#aitype');
+  const ai=(function(){
+    const box=document.getElementById('aitype'),bd=document.getElementById('billdata');
+    const ans='For the latest billed month (2026-09), your units used were 255, and you were over your slab limit by 55 units. Please turn the lights off when the room is empty, as sensor data shows 11.5 hours of empty light usage over the last 7 days. For bill disputes, please check official FESCO or NEPRA channels.';
+    const rows=[['month','"2026-07"'],['units','416'],['amount_rs','184'],['solar_credit','true'],['earlier_months','11'],['account_no','not read']];
+    let tm=[];
+    return run=>{
+      tm.forEach(clearTimeout);tm=[];box.innerHTML='';bd.innerHTML='{';
+      if(!run)return;
+      rows.forEach((r,i)=>tm.push(setTimeout(()=>{bd.innerHTML+='<br>&nbsp;&nbsp;<span class="kk">"'+r[0]+'"</span>: <span class="vv">'+r[1]+'</span>'+(i<rows.length-1?',':'<br>}');},600+i*350)));
+      let i=0;tm.push(setTimeout(function ty(){box.innerHTML=ans.slice(0,i+=2)+'<span class="caret"></span>';if(i<ans.length)tm.push(setTimeout(ty,20));},1200));
+    };
+  })();
+
+  /* ---- slide 10: interactive architecture ---- */
+  const ARCH=idx('#net');
+  const arch=(function(){
+    const $=id=>document.getElementById(id);
+    const det=$('det'),pkt=$('pkt'),nodes=[...document.querySelectorAll('.node')],count=$('tCount'),lines=[...document.querySelectorAll('.net line')];
+    const pos={esp:[11,30],fb:[50,30],app:[89,30],brain:[50,78],gem:[89,78]};
+    // What each part does. Paths and file names are the real ones in the repo.
+    const info={
+      esp:{t:'ESP32',s:'Sensor in the living room',d:'Reads Wi-Fi signal variation, the LDR, MPU6050 and DHT22 every second, decides presence on the board, and writes to Firebase over Wi-Fi.',
+           l:'Writes',p:['/room1/state','/room1/events','/alerts'],c:'firmware/room_node.ino'},
+      fb:{t:'Firebase',s:'Realtime Database, free plan',d:'The shared live state. The ESP32 writes to it, and the app and Python workers listen for changes, so updates appear without refreshing.',
+          l:'Holds',p:['/room1/state','/room1/events','/alerts','/users/{uid}/bills','/users/{uid}/reports'],c:'brain/firebase_db.py'},
+      app:{t:'Phone app',s:'Expo React Native',d:'Live room status, the Wi-Fi motion view, alerts with one-tap answers, the report, chat and the solar advisor. It holds no AI key: it proves who it is with its Firebase sign-in.',
+           l:'Screens',p:['Live','Room','Alerts','Report','Chat','Solar','Setup'],c:'app/src/screens/'},
+      brain:{t:'Cloud brain',s:'Vercel, works with the laptop off',d:'Runs chat, bill scanning and the solar advisor in the cloud and keeps the Gemini key. The month-end report (report.py) still runs on the laptop for now.',
+             l:'Runs',p:['AI assistant','Bill scanner','Solar advisor','report.py (laptop, by hand)'],c:'brain/'},
+      gem:{t:'Gemini',s:'gemini-3.5-flash-lite, with a fallback model',d:'Reads bill photos, answers questions, explains the month and recommends a solar plan. It never calculates the waste or the bill itself.',
+           l:'Used for',p:['Bill photo reading','Chat answers','Month-end explanation and plan','Solar recommendation'],c:'Called from the cloud brain only'}
+    };
+    // One alert, start to finish: [from, to, text]. from===to means nothing moves.
+    const trace=[
+      ['esp','esp','Nobody has moved for a minute. The ESP32 marks the living room as empty.'],
+      ['esp','fb','The fan is still on, so the ESP32 writes presence "empty" and a new alert to Firebase.'],
+      ['fb','app','The app is listening to /alerts, so the alert appears on the phone straight away.'],
+      ['app','fb','The user taps "I switched it off". The alert\'s status changes to "acted".'],
+      ['fb','brain','At the end of the month, report.py reads the logged events and the bill.'],
+      ['brain','gem','It calculates waste ranges per appliance and sends them to Gemini as input.'],
+      ['gem','brain','Gemini sends back a plain explanation and a plan for next month.'],
+      ['brain','fb','The report is saved under /users/{uid}/reports.'],
+      ['fb','app','The Report screen shows the ranges, the explanation and the plan.']
+    ];
+    let step=-1,playT=0,anim=0,startT=0;
+    const edge=(a,b)=>$('e-'+a+'-'+b)||$('e-'+b+'-'+a);
+    const clearLines=()=>{lines.forEach(l=>l.classList.remove('hot'));$('arr').classList.remove('on');};
+    function select(n){
+      nodes.forEach(x=>x.classList.toggle('sel',x.dataset.n===n));
+      const o=info[n];
+      det.innerHTML='<div class="k">Selected part</div><h3>'+o.t+'</h3><div class="sub">'+o.s+'</div><p>'+o.d+'</p>'+
+        '<div class="lbl2">'+o.l+'</div><ul>'+o.p.map(x=>'<li>'+x+'</li>').join('')+'</ul>'+
+        '<div class="lbl2">Code</div><div class="sm" style="font-family:ui-monospace,Consolas,monospace;color:#E8DCD1">'+o.c+'</div>';
+    }
+    // the active connection lights up and its dashes flow from a to b; it runs under the boxes, so it never covers text
+    function movePkt(a,b){
+      clearLines();lines.forEach(l=>l.classList.remove('rev'));
+      if(a===b)return;
+      const fwd=$('e-'+a+'-'+b),e=fwd||$('e-'+b+'-'+a);
+      if(e){e.classList.add('hot');e.classList.toggle('rev',!fwd);}
+      // place the arrow tip on the edge of the destination box, pointing into it
+      const net=$('net').getBoundingClientRect(),q=n=>document.querySelector('.node[data-n="'+n+'"]').getBoundingClientRect();
+      const A=q(a),B=q(b),ax=A.left+A.width/2,ay=A.top+A.height/2,bx=B.left+B.width/2,by=B.top+B.height/2;
+      let x,y,ang;
+      if(Math.abs(bx-ax)>=Math.abs(by-ay)){x=bx>ax?B.left-3:B.right+3;y=by;ang=bx>ax?0:180;}
+      else{x=bx;y=by>ay?B.top-3:B.bottom+3;ang=by>ay?90:-90;}
+      const arr=$('arr');
+      arr.style.left=((x-net.left)/net.width*100)+'%';arr.style.top=((y-net.top)/net.height*100)+'%';
+      arr.style.transform='rotate('+ang+'deg)';arr.classList.add('on');
+    }
+    function show(i){
+      step=i;const [a,b,txt]=trace[i];
+      nodes.forEach(x=>x.classList.toggle('sel',x.dataset.n===b));
+      movePkt(a,b);
+      det.innerHTML='<div class="k">Following one alert</div><h3>Step '+(i+1)+' of '+trace.length+'</h3><div class="sub">'+info[a].t+(a===b?'':' to '+info[b].t)+'</div><p class="trace">'+txt+'</p>';
+      count.textContent=(i+1)+' / '+trace.length;
+      $('tPrev').disabled=i<=0;$('tNext').disabled=i>=trace.length-1;
+    }
+    function stop(){clearInterval(playT);playT=0;$('tPlay').textContent='Follow one alert';}
+    function play(){
+      if(playT){stop();return;}
+      $('tPlay').textContent='Pause';
+      show(step>=0&&step<trace.length-1?step+1:0);
+      playT=setInterval(()=>{if(step>=trace.length-1){stop();return;}show(step+1);},2600);
+    }
+    function reset(){stop();cancelAnimationFrame(anim);pkt.style.opacity=0;step=-1;count.textContent='';clearLines();
+      $('tPrev').disabled=true;$('tNext').disabled=false;select('esp');}
+    nodes.forEach(n=>n.addEventListener('click',()=>{stop();cancelAnimationFrame(anim);pkt.style.opacity=0;count.textContent='';clearLines();select(n.dataset.n);}));
+    $('archbox').addEventListener('click',()=>clearTimeout(startT),true);   // any click cancels the pending auto-start
+    $('tPlay').onclick=play;
+    $('tNext').onclick=()=>{stop();show(Math.min(trace.length-1,step+1));};
+    $('tPrev').onclick=()=>{stop();show(Math.max(0,step-1));};
+    // clicks inside this slide's cards must not advance the deck
+    ['archbox','det'].forEach(id=>$(id).addEventListener('click',e=>e.stopPropagation()));
+    reset();
+    return {leave:()=>{clearTimeout(startT);stop();},autoplay:()=>{reset();clearTimeout(startT);startT=setTimeout(play,1200);}};
+  })();
+
+  function go(n){
+    if(n<0||n>=slides.length||n===cur)return;
+    if(slides[cur])slides[cur].classList.remove('on');
+    if(cur===ARCH)arch.leave();
+    cur=n;const s=slides[n],pad=x=>String(x).padStart(2,'0');
+    requestAnimationFrame(()=>s.classList.add('on'));
+    sec.textContent=s.dataset.sec||'';
+    pg.innerHTML='<b>'+pad(n+1)+'</b> / '+pad(slides.length);
+    barI.style.width=((n+1)/slides.length*100)+'%';
+    demo(n===DEMO);ai(n===AI);counters(s);cyclers(s);
+    if(n===ARCH)arch.autoplay();          // the walkthrough starts by itself; any click takes over
+    history.replaceState(null,'','#'+(n+1));
+  }
+
+  /* ---- autoplay: press A, or open with ?autoplay (for recording the demo video) ---- */
+  let auto=0;
+  const holdFor=n=>n===DEMO?17000:n===ARCH?25000:n===AI?11000:7000;
+  function autoplay(on){
+    clearTimeout(auto);auto=0;
+    if(on)(function step(){auto=setTimeout(()=>{go(cur+1>=slides.length?0:cur+1);step();},holdFor(cur));})();
+  }
+
+  document.getElementById('next').onclick=e=>{e.stopPropagation();go(cur+1)};
+  document.getElementById('prev').onclick=e=>{e.stopPropagation();go(cur-1)};
+  addEventListener('keydown',e=>{
+    if(['ArrowRight','ArrowDown','PageDown',' '].includes(e.key)){e.preventDefault();go(cur+1);}
+    else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();go(cur-1);}
+    else if(e.key==='Home')go(0);else if(e.key==='End')go(slides.length-1);
+    else if(e.key==='a'||e.key==='A')autoplay(!auto);
+    else if(e.key==='f'||e.key==='F'){document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();}
+  });
+  addEventListener('click',()=>go(cur+1));
+  let tx=null;addEventListener('touchstart',e=>{tx=e.touches[0].clientX},{passive:true});
+  addEventListener('touchend',e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;if(Math.abs(d)>60)go(cur+(d<0?1:-1));tx=null;});
+
+  const st=(parseInt(location.hash.slice(1))||1)-1;cur=-1;
+  if(/autoplay/.test(location.search))auto=1;      // set before the first go() so slide 10 starts its walkthrough
+  go(Math.max(0,Math.min(st,slides.length-1)));
+  if(auto)autoplay(true);
+})();
+</script>
+</body>
+</html>

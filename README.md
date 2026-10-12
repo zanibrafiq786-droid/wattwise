@@ -13,6 +13,7 @@ what order, and every scope tradeoff made along the way.
 |---|---|
 | **Demo video (45 s)** | [media/WattWise-Demo.mp4](media/WattWise-Demo.mp4) -- open it and press *View raw* to play it in the browser |
 | **Android app (APK)** | [Download WattWise APK (version 6)](https://expo.dev/artifacts/eas/-Cajkix7IXWXYu39TXoiCZ284qgNbs9CDPkSKAjtYJQ.apk) |
+| **Pitch deck** | [presentation/index.html](presentation/index.html) -- download the `presentation` folder and open `index.html` in a browser (arrow keys or click to move, `F` for full screen, `A` to autoplay) |
 | **How the AI works** | [docs/ai-features.md](docs/ai-features.md) |
 
 **Installing the APK:** open the link on an Android phone, download, tap the file and choose
@@ -29,7 +30,10 @@ step are blurred for privacy.
 /firmware   ESP32 sketch (PlatformIO/Arduino) -- presence + light/fan/temp sensors
 /brain      Python: Firebase-mediated AI workers (chat, solar analysis, month-end report)
 /app        Expo React Native phone app
-/docs       progress.md, test-log.md, accuracy.md
+/docs       progress.md, test-log.md, accuracy.md, ai-features.md
+/presentation  pitch deck (open index.html in a browser)
+/media      45 s demo video
+/videos     source of the demo video (HyperFrames)
 /sim        simulated-month data generator (clearly labelled SIMULATED everywhere it's used)
 ```
 

@@ -6,7 +6,7 @@ import { Card } from "../components/Card";
 import { useAuth } from "../lib/authContext";
 import { saveBill, saveConfig, useBill, useConfig } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
-import { colors, spacing } from "../lib/theme";
+import { colors, fonts, spacing } from "../lib/theme";
 
 function currentMonthKey() {
   const d = new Date();
@@ -140,9 +140,9 @@ function Field({
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, gap: spacing.md },
-  title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
   card: { gap: spacing.sm },
-  cardTitle: { color: colors.text, fontSize: 16, fontWeight: "700", marginBottom: spacing.xs },
+  cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium, marginBottom: spacing.xs },
   field: { gap: spacing.xs },
   fieldLabel: { color: colors.textMuted, fontSize: 13 },
   input: {

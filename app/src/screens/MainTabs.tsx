@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import React from "react";
-import { Text } from "react-native";
 import { AcAlertBanner } from "../components/AcAlertBanner";
+import { Icon, IconName } from "../components/Icon";
 import { useI18n } from "../lib/i18n";
 import { colors } from "../lib/theme";
 import { useAcLeftOnWatcher } from "../lib/useAcLeftOnWatcher";
@@ -13,12 +13,12 @@ import { SetupScreen } from "./SetupScreen";
 
 const Tab = createBottomTabNavigator();
 
-const ICONS: Record<string, string> = {
-  Live: "⚡",
-  Room: "📡",
-  Alerts: "🔔",
-  Report: "📊",
-  Setup: "⚙",
+const TAB_ICONS: Record<string, IconName> = {
+  Live: "home",
+  Room: "cloud",
+  Alerts: "bell",
+  Report: "chart",
+  Setup: "sliders",
 };
 
 export function MainTabs() {
@@ -36,7 +36,7 @@ export function MainTabs() {
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-          tabBarIcon: () => <Text style={{ fontSize: 18 }}>{ICONS[route.name]}</Text>,
+          tabBarIcon: ({ color }) => <Icon name={TAB_ICONS[route.name]} size={22} color={color} />,
         })}
       >
         <Tab.Screen name="Live" component={LiveScreen} options={{ tabBarLabel: t("tabLive") }} />

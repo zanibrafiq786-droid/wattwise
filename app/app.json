@@ -29,7 +29,8 @@
     },
     "owner": "zainab87s-team",
     "plugins": [
-      "expo-sharing"
+      "expo-sharing",
+      "expo-font"
     ]
   }
 }

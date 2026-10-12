@@ -12,7 +12,8 @@ const LANGUAGE_STORAGE_KEY = "room-energy:language";
 
 const translations = {
   en: {
-    appName: "Room Energy",
+    appName: "WattWise",
+    appTaglineShort: "Bijli Bachao",
     appTagline: "See which appliances waste electricity while the room is empty, and what it's costing you.",
     signUp: "Sign up",
     signIn: "Sign in",
@@ -99,7 +100,8 @@ const translations = {
     saveSettings: "Save settings",
   },
   ur: {
-    appName: "روم انرجی",
+    appName: "WattWise",
+    appTaglineShort: "بجلی بچاؤ",
     appTagline: "دیکھیں کمرہ خالی ہونے پر کون سا آلہ بجلی ضائع کر رہا ہے، اور اس کی لاگت کتنی ہے۔",
     signUp: "سائن اپ",
     signIn: "سائن ان",

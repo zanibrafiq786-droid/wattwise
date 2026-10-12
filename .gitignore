@@ -5,6 +5,11 @@
 serviceAccountKey.json
 firebase-service-account*.json
 brain/test_bills/
+
+# Design reference pack (WattWise v2) -- kept locally, not part of the
+# shipped app; the assets actually used were copied into app/assets and
+# app/src/assets.
+Version 2/
 **/secrets.h
 **/wifi_config.h
 

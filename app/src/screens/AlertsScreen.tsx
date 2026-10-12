@@ -9,7 +9,7 @@ import { setAlertStatus, useAlerts } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
 import { ensureNotificationPermission, notifyNewAlert } from "../lib/notifications";
 import { timeAgo } from "../lib/time";
-import { colors, spacing } from "../lib/theme";
+import { colors, fonts, spacing } from "../lib/theme";
 import { Alert } from "../lib/types";
 
 export function AlertsScreen() {
@@ -87,7 +87,7 @@ function AlertRow({ alert }: { alert: Alert }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
-  title: { color: colors.text, fontSize: 24, fontWeight: "800", padding: spacing.md, paddingBottom: 0 },
+  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading, padding: spacing.md, paddingBottom: 0 },
   list: { padding: spacing.md, gap: spacing.md },
   card: { gap: spacing.sm },
   rowTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

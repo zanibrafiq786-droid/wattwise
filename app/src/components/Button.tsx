@@ -1,6 +1,6 @@
 import React from "react";
 import { Pressable, StyleSheet, Text } from "react-native";
-import { colors, radius, spacing } from "../lib/theme";
+import { colors, fonts, radius, spacing } from "../lib/theme";
 
 export function Button({
   label,
@@ -34,9 +34,9 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: spacing.sm + 4,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
+    paddingVertical: spacing.sm + 7,
+    paddingHorizontal: spacing.md + 4,
+    borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   label: {
-    fontWeight: "700",
+    fontFamily: fonts.bodySemiBold,
     fontSize: 15,
   },
 });

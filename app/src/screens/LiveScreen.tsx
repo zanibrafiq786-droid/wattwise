@@ -7,7 +7,7 @@ import { StateView } from "../components/StateView";
 import { setAcOn, useAcOn, useRoomState } from "../lib/firebase";
 import { TranslationKey, useI18n } from "../lib/i18n";
 import { timeAgo } from "../lib/time";
-import { colors, spacing } from "../lib/theme";
+import { colors, fonts, spacing } from "../lib/theme";
 import { Presence } from "../lib/types";
 
 const PRESENCE_LABEL_KEY: Record<Presence, TranslationKey> = {
@@ -121,7 +121,7 @@ function Reading({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, gap: spacing.md },
-  title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
   presenceCard: { gap: spacing.md },
   presenceHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   updated: { color: colors.textMuted, fontSize: 12 },

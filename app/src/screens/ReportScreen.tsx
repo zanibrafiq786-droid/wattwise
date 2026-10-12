@@ -19,7 +19,7 @@ import {
 import { computeForecast } from "../lib/forecastCalc";
 import { useI18n } from "../lib/i18n";
 import { computeWasteReport } from "../lib/reportCalc";
-import { colors, spacing } from "../lib/theme";
+import { colors, fonts, spacing } from "../lib/theme";
 
 function currentMonthKey() {
   const d = new Date();
@@ -173,9 +173,9 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.md, gap: spacing.md },
   titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  title: { color: colors.text, fontSize: 24, fontWeight: "800" },
+  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
   card: { gap: spacing.sm },
-  cardTitle: { color: colors.text, fontSize: 16, fontWeight: "700" },
+  cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium },
   subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
   totalRow: {
     flexDirection: "row",

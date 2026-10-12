@@ -4,10 +4,11 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
+import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
 import { useI18n } from "../../lib/i18n";
-import { colors, radius, spacing } from "../../lib/theme";
+import { colors, fonts, spacing } from "../../lib/theme";
 import { AuthStackParamList } from "./AuthNavigator";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
@@ -41,9 +42,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.logoBadge}>
-          <Text style={styles.logoEmoji}>{"⚡"}</Text>
-        </View>
+        <LogoMark size={56} />
         <Text style={styles.title}>{t("resetPassword")}</Text>
 
         <Card style={styles.card}>
@@ -69,19 +68,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.bg },
   content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  logoBadge: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: spacing.xs,
-  },
-  logoEmoji: { fontSize: 30 },
-  title: { color: colors.text, fontSize: 22, fontWeight: "800", marginBottom: spacing.sm },
+  title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
   card: { width: "100%", gap: spacing.md },
   subtle: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
   error: { color: colors.danger, fontSize: 13 },

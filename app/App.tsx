@@ -5,10 +5,11 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TextInput, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthNavigator } from "./src/screens/auth/AuthNavigator";
-import { MainTabs } from "./src/screens/MainTabs";
+import { RootNavigator as AppRootNavigator } from "./src/screens/RootNavigator";
 import { AuthProvider, useAuth } from "./src/lib/authContext";
 import { I18nProvider } from "./src/lib/i18n";
 import { colors, fonts } from "./src/lib/theme";
+import { ThemeProvider, useThemeMode } from "./src/lib/themeContext";
 
 // Figtree is the body workhorse everywhere (WattWise spec section 3) --
 // patching Text/TextInput defaultProps applies it app-wide without having
@@ -23,20 +24,51 @@ import { colors, fonts } from "./src/lib/theme";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (TextInput as any).defaultProps.style = [{ fontFamily: fonts.body }, (TextInput as any).defaultProps.style];
 
-function RootNavigator() {
+function AuthGate() {
   const { user, loading } = useAuth();
+  const { colors: themeColors } = useThemeMode();
 
   if (loading) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.bg }}>
-        <ActivityIndicator size="large" color={colors.primary} />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: themeColors.bg }}>
+        <ActivityIndicator size="large" color={themeColors.primary} />
       </View>
     );
   }
 
   // Signed-out users see only the auth screens -- the main app (and the
   // legacy /room1 flow it still supports) only renders once signed in.
-  return user ? <MainTabs /> : <AuthNavigator />;
+  return user ? <AppRootNavigator /> : <AuthNavigator />;
+}
+
+function ThemedNavigation() {
+  const { mode, colors: themeColors } = useThemeMode();
+  return (
+    <>
+      <StatusBar style={mode === "cream" ? "dark" : "light"} />
+      <NavigationContainer
+        theme={{
+          dark: mode === "espresso",
+          colors: {
+            primary: themeColors.primary,
+            background: themeColors.bg,
+            card: themeColors.surface,
+            text: themeColors.text,
+            border: themeColors.border,
+            notification: themeColors.danger,
+          },
+          fonts: {
+            regular: { fontFamily: fonts.body, fontWeight: "400" },
+            medium: { fontFamily: fonts.bodyMedium, fontWeight: "500" },
+            bold: { fontFamily: fonts.bodySemiBold, fontWeight: "600" },
+            heavy: { fontFamily: fonts.headingMedium, fontWeight: "700" },
+          },
+        }}
+      >
+        <AuthGate />
+      </NavigationContainer>
+    </>
+  );
 }
 
 export default function App() {
@@ -65,32 +97,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="light" />
-      <I18nProvider>
-        <AuthProvider>
-          <NavigationContainer
-            theme={{
-              dark: true,
-              colors: {
-                primary: colors.primary,
-                background: colors.bg,
-                card: colors.surface,
-                text: colors.text,
-                border: colors.border,
-                notification: colors.danger,
-              },
-              fonts: {
-                regular: { fontFamily: fonts.body, fontWeight: "400" },
-                medium: { fontFamily: fonts.bodyMedium, fontWeight: "500" },
-                bold: { fontFamily: fonts.bodySemiBold, fontWeight: "600" },
-                heavy: { fontFamily: fonts.headingMedium, fontWeight: "700" },
-              },
-            }}
-          >
-            <RootNavigator />
-          </NavigationContainer>
-        </AuthProvider>
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <AuthProvider>
+            <ThemedNavigation />
+          </AuthProvider>
+        </I18nProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

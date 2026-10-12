@@ -1,22 +1,46 @@
-// WattWise v2 design tokens (Espresso/dark theme only for now -- the Cream
-// light theme + Setup toggle is a fast-follow, time-boxed out of the
-// hackathon submission). Values from Version 2/DESIGN-v2.md section 2.
-export const colors = {
+// WattWise v2 design tokens -- both themes from DESIGN-v2.md section 2.
+const espresso = {
   bg: "#15110e",
   surface: "#221c18",
-  surfaceAlt: "#2b241f", // surface-2: text mixed ~5% into surface
-  border: "#342c26", // line: text at ~8%
+  surfaceAlt: "#2b241f",
+  border: "#342c26",
   text: "#f3ece5",
-  textMuted: "#a89b8e", // text-2: text at ~62%
-  primary: "#f28b4b", // accent (orange)
-  primarySoft: "#7a4426", // accent-2
-  success: "#7fc4bd", // "still" teal, reused as a positive/ok color
-  warning: "#f6a467", // amber: active dot, lamp glow
-  danger: "#ff6b4f", // "waste" brick red
+  textMuted: "#a89b8e",
+  primary: "#f28b4b",
+  primarySoft: "#7a4426",
+  success: "#7fc4bd",
+  warning: "#f6a467",
+  danger: "#ff6b4f",
   active: "#f6a467",
   quiet: "#7fc4bd",
   empty: "#6b625a",
 };
+
+const cream = {
+  bg: "#ece6df",
+  surface: "#fbf9f6",
+  surfaceAlt: "#f1ebe3", // surface mixed ~5% with text
+  border: "#ddd5ca", // surface/text mix ~8%
+  text: "#2b231e",
+  textMuted: "#8a8074", // text at ~62% over cream bg
+  primary: "#ec7632",
+  primarySoft: "#f8c8a2",
+  success: "#3d847e",
+  warning: "#ec7632",
+  danger: "#c3402a",
+  active: "#ec7632",
+  quiet: "#3d847e",
+  empty: "#aba194",
+};
+
+export const PALETTES = { espresso, cream };
+export type ThemeMode = keyof typeof PALETTES;
+export type Colors = typeof espresso;
+
+// Static default export -- kept for any call site that hasn't been
+// converted to useColors() yet. Points at Espresso so nothing regresses,
+// but won't react to theme changes; prefer useColors() in components.
+export const colors: Colors = espresso;
 
 export const spacing = {
   xs: 4,

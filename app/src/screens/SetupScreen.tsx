@@ -6,7 +6,8 @@ import { Card } from "../components/Card";
 import { useAuth } from "../lib/authContext";
 import { saveBill, saveConfig, useBill, useConfig } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
-import { colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing } from "../lib/theme";
+import { useThemeMode } from "../lib/themeContext";
 
 function currentMonthKey() {
   const d = new Date();
@@ -19,6 +20,8 @@ export function SetupScreen() {
   const { config } = useConfig();
   const { user, signOut } = useAuth();
   const { t, language, setLanguage } = useI18n();
+  const { mode, colors, setMode } = useThemeMode();
+  const styles = makeStyles(colors);
 
   const [units, setUnits] = useState("");
   const [amount, setAmount] = useState("");
@@ -76,6 +79,24 @@ export function SetupScreen() {
         <Text style={styles.title}>{t("setup")}</Text>
 
         <Card style={styles.card}>
+          <Text style={styles.cardTitle}>{t("appearance")}</Text>
+          <View style={styles.langRow}>
+            <Button
+              label={t("espresso")}
+              icon="moon"
+              variant={mode === "espresso" ? "primary" : "secondary"}
+              onPress={() => setMode("espresso")}
+            />
+            <Button
+              label={t("cream")}
+              icon="sun"
+              variant={mode === "cream" ? "primary" : "secondary"}
+              onPress={() => setMode("cream")}
+            />
+          </View>
+        </Card>
+
+        <Card style={styles.card}>
           <Text style={styles.cardTitle}>
             {t("electricityBill")} ({monthKey})
           </Text>
@@ -106,7 +127,7 @@ export function SetupScreen() {
         <Card style={styles.card}>
           <Text style={styles.cardTitle}>{t("account")}</Text>
           <Text style={styles.fieldLabel}>{user?.email}</Text>
-          <Button label={t("signOut")} variant="danger" onPress={() => signOut()} />
+          <Button label={t("signOut")} variant="danger" icon="logout" onPress={() => signOut()} />
         </Card>
       </ScrollView>
     </SafeAreaView>
@@ -122,6 +143,8 @@ function Field({
   value: string;
   onChangeText: (v: string) => void;
 }) {
+  const { colors } = useThemeMode();
+  const styles = makeStyles(colors);
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -137,24 +160,26 @@ function Field({
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.md, gap: spacing.md },
-  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
-  card: { gap: spacing.sm },
-  cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium, marginBottom: spacing.xs },
-  field: { gap: spacing.xs },
-  fieldLabel: { color: colors.textMuted, fontSize: 13 },
-  input: {
-    backgroundColor: colors.surfaceAlt,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    color: colors.text,
-    fontSize: 15,
-  },
-  saved: { color: colors.success, textAlign: "center" },
-  langRow: { flexDirection: "row", gap: spacing.sm },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: spacing.md, gap: spacing.md },
+    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
+    card: { gap: spacing.sm },
+    cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium, marginBottom: spacing.xs },
+    field: { gap: spacing.xs },
+    fieldLabel: { color: colors.textMuted, fontSize: 13 },
+    input: {
+      backgroundColor: colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 8,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.sm,
+      color: colors.text,
+      fontSize: 15,
+    },
+    saved: { color: colors.success, textAlign: "center" },
+    langRow: { flexDirection: "row", gap: spacing.sm },
+  });
+}

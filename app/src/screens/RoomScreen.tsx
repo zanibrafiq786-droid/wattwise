@@ -4,18 +4,22 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import WebView from "react-native-webview";
 import { useAcOn, useRoomState } from "../lib/firebase";
 import { ROOM_HTML } from "../lib/roomHtml";
-import { colors } from "../lib/theme";
+import { Colors } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 
 // Hosts room.html (built outside this app, not redrawn here) inside a
 // WebView and feeds it real data from /room1/state + /room1/state_user/ac_on
 // on every update. The page itself switches its own badge from
 // "DEMO / SIMULATED" to "LIVE" once it receives a message -- see room.html's
-// onMsg handler.
+// onMsg handler. room.html has its own fixed dark look, independent of the
+// app's Cream/Espresso toggle.
 export function RoomScreen() {
   const { state } = useRoomState("room1");
   const { acOn } = useAcOn("room1");
   const webViewRef = useRef<WebView>(null);
   const [loaded, setLoaded] = useState(false);
+  const colors = useColors();
+  const styles = makeStyles(colors);
 
   useEffect(() => {
     // Wait until the page has actually loaded (and registered its message
@@ -46,7 +50,9 @@ export function RoomScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  webview: { flex: 1, backgroundColor: colors.bg },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    webview: { flex: 1, backgroundColor: colors.bg },
+  });
+}

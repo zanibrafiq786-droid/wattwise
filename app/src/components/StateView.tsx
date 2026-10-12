@@ -1,6 +1,7 @@
 import React from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { colors, spacing } from "../lib/theme";
+import { Colors, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 
 // Wraps a screen's content: shows a spinner while loading, a message if
 // there's an error, a message if there's nothing to show yet, or the
@@ -18,6 +19,9 @@ export function StateView({
   emptyMessage?: string;
   children: React.ReactNode;
 }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -44,22 +48,24 @@ export function StateView({
   return <>{children}</>;
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  muted: {
-    color: colors.textMuted,
-    fontSize: 14,
-    textAlign: "center",
-  },
-  errorTitle: {
-    color: colors.danger,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.lg,
+      gap: spacing.sm,
+    },
+    muted: {
+      color: colors.textMuted,
+      fontSize: 14,
+      textAlign: "center",
+    },
+    errorTitle: {
+      color: colors.danger,
+      fontSize: 16,
+      fontWeight: "600",
+    },
+  });
+}

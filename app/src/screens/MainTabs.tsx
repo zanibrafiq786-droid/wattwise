@@ -3,7 +3,7 @@ import React from "react";
 import { AcAlertBanner } from "../components/AcAlertBanner";
 import { Icon, IconName } from "../components/Icon";
 import { useI18n } from "../lib/i18n";
-import { colors } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 import { useAcLeftOnWatcher } from "../lib/useAcLeftOnWatcher";
 import { AlertsScreen } from "./AlertsScreen";
 import { LiveScreen } from "./LiveScreen";
@@ -26,6 +26,7 @@ export function MainTabs() {
   // running no matter which tab is open.
   useAcLeftOnWatcher("room1");
   const { t } = useI18n();
+  const colors = useColors();
 
   return (
     <>

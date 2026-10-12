@@ -8,7 +8,8 @@ import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
 import { useI18n } from "../../lib/i18n";
-import { colors, fonts, spacing } from "../../lib/theme";
+import { Colors, fonts, spacing } from "../../lib/theme";
+import { useColors } from "../../lib/themeContext";
 import { AuthStackParamList } from "./AuthNavigator";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
@@ -16,6 +17,9 @@ type Props = NativeStackScreenProps<AuthStackParamList, "SignUp">;
 export function SignUpScreen({ navigation }: Props) {
   const { signUp } = useAuth();
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -29,7 +33,7 @@ export function SignUpScreen({ navigation }: Props) {
     }
     setBusy(true);
     try {
-      await signUp(email.trim(), password);
+      await signUp(email.trim(), password, name.trim());
       // Navigation switches to the main app automatically once
       // onAuthStateChanged fires (see App.tsx).
     } catch (err) {
@@ -48,6 +52,7 @@ export function SignUpScreen({ navigation }: Props) {
           <Text style={styles.title}>{t("createAccount")}</Text>
 
           <Card style={styles.card}>
+            <TextField label={t("fullName")} value={name} onChangeText={setName} autoCapitalize="words" />
             <TextField label={t("email")} value={email} onChangeText={setEmail} keyboardType="email-address" />
             <TextField label={t("password")} value={password} onChangeText={setPassword} secureTextEntry />
             {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -61,10 +66,12 @@ export function SignUpScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
-  card: { width: "100%", gap: spacing.md },
-  error: { color: colors.danger, fontSize: 13 },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
+    title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
+    card: { width: "100%", gap: spacing.md },
+    error: { color: colors.danger, fontSize: 13 },
+  });
+}

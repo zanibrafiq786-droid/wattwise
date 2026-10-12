@@ -8,7 +8,8 @@ import { LogoMark } from "../../components/LogoMark";
 import { TextField } from "../../components/TextField";
 import { authErrorMessage, useAuth } from "../../lib/authContext";
 import { useI18n } from "../../lib/i18n";
-import { colors, fonts, spacing } from "../../lib/theme";
+import { Colors, fonts, spacing } from "../../lib/theme";
+import { useColors } from "../../lib/themeContext";
 import { AuthStackParamList } from "./AuthNavigator";
 
 type Props = NativeStackScreenProps<AuthStackParamList, "SignIn">;
@@ -16,6 +17,8 @@ type Props = NativeStackScreenProps<AuthStackParamList, "SignIn">;
 export function SignInScreen({ navigation }: Props) {
   const { signIn } = useAuth();
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -60,10 +63,12 @@ export function SignInScreen({ navigation }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
-  title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
-  card: { width: "100%", gap: spacing.md },
-  error: { color: colors.danger, fontSize: 13 },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
+    title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
+    card: { width: "100%", gap: spacing.md },
+    error: { color: colors.danger, fontSize: 13 },
+  });
+}

@@ -4,6 +4,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
+  updateProfile,
   User,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
@@ -11,22 +12,30 @@ import { auth } from "../../firebaseConfig";
 
 interface AuthContextValue {
   user: User | null;
+  // Firebase's User object doesn't trigger a re-render when
+  // updateProfile() mutates displayName in place (same object reference) --
+  // tracked separately here so the UI updates immediately after a name
+  // change instead of waiting for the next app restart.
+  displayName: string | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
+  updateName: (name: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
+      setDisplayName(u?.displayName ?? null);
       setLoading(false);
     });
     return unsub;
@@ -34,9 +43,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextValue = {
     user,
+    displayName,
     loading,
-    signUp: async (email, password) => {
-      await createUserWithEmailAndPassword(auth, email, password);
+    signUp: async (email, password, name) => {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      if (name) {
+        await updateProfile(cred.user, { displayName: name });
+        setDisplayName(name);
+      }
     },
     signIn: async (email, password) => {
       await signInWithEmailAndPassword(auth, email, password);
@@ -46,6 +60,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     resetPassword: async (email) => {
       await sendPasswordResetEmail(auth, email);
+    },
+    updateName: async (name) => {
+      if (!auth.currentUser) return;
+      await updateProfile(auth.currentUser, { displayName: name });
+      setDisplayName(name);
     },
   };
 

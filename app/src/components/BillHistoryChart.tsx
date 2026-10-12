@@ -1,7 +1,8 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Svg, { Line, Rect, Text as SvgText } from "react-native-svg";
-import { colors, spacing } from "../lib/theme";
+import { Colors, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 import { BillEntry } from "../lib/types";
 
 const SLAB_LIMIT = 200;
@@ -18,6 +19,8 @@ function monthLabel(monthKey: string) {
 // 200-unit slab -- bars that cross it are highlighted so it's obvious at a
 // glance which months fell into the higher tariff slab.
 export function BillHistoryChart({ bills }: { bills: BillEntry[] }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const last12 = bills.slice(-12);
   const maxUnits = Math.max(SLAB_LIMIT * 1.2, ...last12.map((b) => b.units));
   const barGap = 6;
@@ -73,6 +76,8 @@ export function BillHistoryChart({ bills }: { bills: BillEntry[] }) {
 }
 
 function LegendDot({ color, label }: { color: string; label: string }) {
+  const colors = useColors();
+  const styles = makeStyles(colors);
   return (
     <View style={styles.legendItem}>
       <View style={[styles.legendDot, { backgroundColor: color }]} />
@@ -81,12 +86,14 @@ function LegendDot({ color, label }: { color: string; label: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  wrap: { gap: spacing.sm },
-  labelsRow: { flexDirection: "row", justifyContent: "space-between" },
-  monthLabel: { color: colors.textMuted, fontSize: 9, flex: 1, textAlign: "center" },
-  legendRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  legendDot: { width: 8, height: 8, borderRadius: 4 },
-  legendLabel: { color: colors.textMuted, fontSize: 11 },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    wrap: { gap: spacing.sm },
+    labelsRow: { flexDirection: "row", justifyContent: "space-between" },
+    monthLabel: { color: colors.textMuted, fontSize: 9, flex: 1, textAlign: "center" },
+    legendRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },
+    legendItem: { flexDirection: "row", alignItems: "center", gap: 4 },
+    legendDot: { width: 8, height: 8, borderRadius: 4 },
+    legendLabel: { color: colors.textMuted, fontSize: 11 },
+  });
+}

@@ -5,9 +5,11 @@ import { Badge } from "../components/Badge";
 import { BillHistoryChart } from "../components/BillHistoryChart";
 import { BillImportCard } from "../components/BillImportCard";
 import { Card } from "../components/Card";
+import { MonthDial } from "../components/MonthDial";
 import { RangeBarChart } from "../components/RangeBarChart";
 import { SlabRiskMeter } from "../components/SlabRiskMeter";
 import { StateView } from "../components/StateView";
+import { WhyBillHighCard } from "../components/WhyBillHighCard";
 import {
   useBill,
   useBillHistory,
@@ -19,7 +21,8 @@ import {
 import { computeForecast } from "../lib/forecastCalc";
 import { useI18n } from "../lib/i18n";
 import { computeWasteReport } from "../lib/reportCalc";
-import { colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 
 function currentMonthKey() {
   const d = new Date();
@@ -42,6 +45,8 @@ export function ReportScreen() {
   const waste = events ? computeWasteReport(events, config, latestBill ?? bill) : null;
   const forecasts = bills ? computeForecast(bills, config) : [];
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -62,6 +67,15 @@ export function ReportScreen() {
           >
             {bills && bills.length > 0 && (
               <>
+                {latestBill && (
+                  <View style={styles.dialRow}>
+                    <MonthDial
+                      unitsUsed={latestBill.units}
+                      projectedUnits={latestBill.units}
+                      projectedRs={latestBill.amount_rs}
+                    />
+                  </View>
+                )}
                 <BillHistoryChart bills={bills} />
                 {latestBill && <SlabRiskMeter month={latestBill.month} units={latestBill.units} />}
               </>
@@ -112,6 +126,8 @@ export function ReportScreen() {
                   </Text>
                 )}
               </Card>
+
+              <WhyBillHighCard waste={waste} />
 
               <Card style={styles.card}>
                 <Text style={styles.cardTitle}>{t("aiExplanationTitle")}</Text>
@@ -169,29 +185,32 @@ export function ReportScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.md, gap: spacing.md },
-  titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
-  card: { gap: spacing.sm },
-  cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium },
-  subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  totalLabel: { color: colors.text, fontWeight: "600" },
-  totalValue: { color: colors.text, fontWeight: "800" },
-  reportText: { color: colors.text, fontSize: 14, lineHeight: 20 },
-  planRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-start" },
-  planIndex: { color: colors.primary, fontWeight: "800", width: 20 },
-  planText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
-  forecastRow: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
-  forecastHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
-  forecastMonth: { color: colors.text, fontWeight: "700", fontSize: 14 },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    content: { padding: spacing.md, gap: spacing.md },
+    titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
+    card: { gap: spacing.sm },
+    dialRow: { alignItems: "center" },
+    cardTitle: { color: colors.text, fontSize: 17, fontFamily: fonts.headingMedium },
+    subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
+    totalRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+      paddingTop: spacing.sm,
+      marginTop: spacing.xs,
+    },
+    totalLabel: { color: colors.text, fontWeight: "600" },
+    totalValue: { color: colors.text, fontWeight: "800" },
+    reportText: { color: colors.text, fontSize: 14, lineHeight: 20 },
+    planRow: { flexDirection: "row", gap: spacing.sm, alignItems: "flex-start" },
+    planIndex: { color: colors.primary, fontWeight: "800", width: 20 },
+    planText: { color: colors.text, fontSize: 14, flex: 1, lineHeight: 20 },
+    forecastRow: { gap: spacing.xs, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm },
+    forecastHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+    forecastMonth: { color: colors.text, fontWeight: "700", fontSize: 14 },
+  });
+}

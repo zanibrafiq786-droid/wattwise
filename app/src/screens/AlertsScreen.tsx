@@ -9,13 +9,16 @@ import { setAlertStatus, useAlerts } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
 import { ensureNotificationPermission, notifyNewAlert } from "../lib/notifications";
 import { timeAgo } from "../lib/time";
-import { colors, fonts, spacing } from "../lib/theme";
+import { Colors, fonts, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 import { Alert } from "../lib/types";
 
 export function AlertsScreen() {
   const { alerts, loading, error } = useAlerts();
   const seenIds = useRef<Set<string> | null>(null);
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
 
   useEffect(() => {
     ensureNotificationPermission();
@@ -58,6 +61,8 @@ export function AlertsScreen() {
 function AlertRow({ alert }: { alert: Alert }) {
   const isNew = alert.status === "new";
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
   return (
     <Card style={styles.card}>
       <View style={styles.rowTop}>
@@ -77,22 +82,34 @@ function AlertRow({ alert }: { alert: Alert }) {
       )}
       {isNew && (
         <View style={styles.actions}>
-          <Button label={t("switchedOff")} variant="primary" onPress={() => setAlertStatus(alert.id, "acted")} />
-          <Button label={t("ignore")} variant="secondary" onPress={() => setAlertStatus(alert.id, "dismissed")} />
+          <Button
+            label={t("switchedOff")}
+            variant="primary"
+            icon="check"
+            onPress={() => setAlertStatus(alert.id, "acted")}
+          />
+          <Button
+            label={t("ignore")}
+            variant="secondary"
+            icon="x"
+            onPress={() => setAlertStatus(alert.id, "dismissed")}
+          />
         </View>
       )}
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.bg },
-  title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading, padding: spacing.md, paddingBottom: 0 },
-  list: { padding: spacing.md, gap: spacing.md },
-  card: { gap: spacing.sm },
-  rowTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  time: { color: colors.textMuted, fontSize: 12 },
-  message: { color: colors.text, fontSize: 15 },
-  waste: { color: colors.warning, fontSize: 13, fontWeight: "600" },
-  actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.bg },
+    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading, padding: spacing.md, paddingBottom: 0 },
+    list: { padding: spacing.md, gap: spacing.md },
+    card: { gap: spacing.sm },
+    rowTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    time: { color: colors.textMuted, fontSize: 12 },
+    message: { color: colors.text, fontSize: 15 },
+    waste: { color: colors.warning, fontSize: 13, fontWeight: "600" },
+    actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.xs },
+  });
+}

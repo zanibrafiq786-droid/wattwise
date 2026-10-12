@@ -3,7 +3,8 @@ import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { ExtractedBill, extractBillFromImage, saveExtractedBill, validateExtractedBill } from "../lib/billImport";
 import { useI18n } from "../lib/i18n";
-import { colors, spacing } from "../lib/theme";
+import { Colors, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 import { Button } from "./Button";
 import { Card } from "./Card";
 
@@ -11,6 +12,8 @@ type Status = "idle" | "loading" | "review" | "error" | "done";
 
 export function BillImportCard() {
   const { t } = useI18n();
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const [status, setStatus] = useState<Status>("idle");
   const [extracted, setExtracted] = useState<ExtractedBill | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
@@ -81,7 +84,7 @@ export function BillImportCard() {
             12-month history table printed on it.
           </Text>
           <View style={styles.row}>
-            <Button label={t("camera")} onPress={() => pickAndExtract("camera")} />
+            <Button label={t("camera")} icon="camera" onPress={() => pickAndExtract("camera")} />
             <Button label={t("gallery")} variant="secondary" onPress={() => pickAndExtract("library")} />
           </View>
         </>
@@ -115,7 +118,7 @@ export function BillImportCard() {
             </View>
           )}
           <View style={styles.row}>
-            <Button label={t("saveToFirebase")} onPress={confirmSave} />
+            <Button label={t("saveToFirebase")} icon="check" onPress={confirmSave} />
             <Button label={t("cancel")} variant="secondary" onPress={reset} />
           </View>
         </>
@@ -140,14 +143,16 @@ export function BillImportCard() {
   );
 }
 
-const styles = StyleSheet.create({
-  card: { gap: spacing.sm },
-  title: { color: colors.text, fontSize: 16, fontWeight: "700" },
-  subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
-  row: { flexDirection: "row", gap: spacing.sm },
-  center: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.md },
-  warnBox: { gap: 2 },
-  warnText: { color: colors.warning, fontSize: 12 },
-  successText: { color: colors.success, fontSize: 14, fontWeight: "600" },
-  errorText: { color: colors.danger, fontSize: 13 },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    card: { gap: spacing.sm },
+    title: { color: colors.text, fontSize: 16, fontWeight: "700" },
+    subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
+    row: { flexDirection: "row", gap: spacing.sm },
+    center: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.md },
+    warnBox: { gap: 2 },
+    warnText: { color: colors.warning, fontSize: 12 },
+    successText: { color: colors.success, fontSize: 14, fontWeight: "600" },
+    errorText: { color: colors.danger, fontSize: 13 },
+  });
+}

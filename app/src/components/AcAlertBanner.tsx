@@ -2,7 +2,8 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logAcTurnedOff, setAcOn, setAlertStatus, useAlerts } from "../lib/firebase";
-import { colors, radius, spacing } from "../lib/theme";
+import { Colors, radius, spacing } from "../lib/theme";
+import { useColors } from "../lib/themeContext";
 import { Button } from "./Button";
 
 // Expo Go can't show OS notifications (see lib/notifications.ts), so this is
@@ -12,6 +13,8 @@ import { Button } from "./Button";
 // alert exists, and disappears the instant its status changes.
 export function AcAlertBanner({ room = "room1" }: { room?: string }) {
   const { alerts } = useAlerts();
+  const colors = useColors();
+  const styles = makeStyles(colors);
   const active = alerts?.find((a) => a.type === "ac_left_on" && a.status === "new");
 
   if (!active) return null;
@@ -44,30 +47,32 @@ export function AcAlertBanner({ room = "room1" }: { room?: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 100,
-  },
-  safe: { backgroundColor: "transparent" },
-  banner: {
-    margin: spacing.md,
-    padding: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.danger,
-    gap: spacing.sm,
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-  title: { color: colors.danger, fontWeight: "800", fontSize: 15 },
-  message: { color: colors.text, fontSize: 14, lineHeight: 19 },
-  actions: { flexDirection: "row", gap: spacing.sm },
-});
+function makeStyles(colors: Colors) {
+  return StyleSheet.create({
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+    },
+    safe: { backgroundColor: "transparent" },
+    banner: {
+      margin: spacing.md,
+      padding: spacing.md,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.danger,
+      gap: spacing.sm,
+      shadowColor: "#000",
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 8,
+    },
+    title: { color: colors.danger, fontWeight: "800", fontSize: 15 },
+    message: { color: colors.text, fontSize: 14, lineHeight: 19 },
+    actions: { flexDirection: "row", gap: spacing.sm },
+  });
+}

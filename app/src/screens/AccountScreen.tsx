@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Avatar } from "../components/Avatar";
 import { Badge } from "../components/Badge";
@@ -74,7 +74,9 @@ export function AccountScreen({ navigation }: Props) {
         <Button label="" icon="back" variant="secondary" onPress={() => navigation.goBack()} />
         <View style={{ flex: 1 }} />
       </View>
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* Lift the form above the keyboard (Android edge-to-edge no longer resizes the window). */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>{t("profile")}</Text>
 
         <Card style={styles.profCard}>
@@ -143,6 +145,7 @@ export function AccountScreen({ navigation }: Props) {
 
         <Button label={t("signOut")} variant="danger" icon="logout" onPress={() => signOut()} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

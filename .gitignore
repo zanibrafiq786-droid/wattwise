@@ -59,3 +59,18 @@ inspiration.mp4
 # Vercel CLI local files
 .vercel
 .env.local
+
+# Video project renders and media (large)
+videos/*/renders/
+videos/*/assets/*.mp4
+videos/*/assets/*.mp3
+
+# Screen recordings and video build files (large / personal)
+*.mp4
+videos/*/assets/*.wav
+videos/*/snapshots/
+videos/*/renders/
+videos/*/node_modules/
+videos/*/.hyperframes/
+videos/*/.thumbnails/
+videos/*/.waveform-cache/

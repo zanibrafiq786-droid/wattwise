@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>WattWise ad</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* Brand: the app's own Espresso theme -- dark warm bg, cream text, one orange accent.
+         Fonts: the app's own Urbanist (headings) + Figtree (body). */
+      @font-face { font-family: "Urbanist"; src: url("assets/fonts/urbanist-300.ttf"); font-weight: 300; }
+      @font-face { font-family: "Urbanist"; src: url("assets/fonts/urbanist-600.ttf"); font-weight: 600; }
+      @font-face { font-family: "Urbanist"; src: url("assets/fonts/urbanist-700.ttf"); font-weight: 700; }
+      @font-face { font-family: "Figtree"; src: url("assets/fonts/figtree-400.ttf"); font-weight: 400; }
+      @font-face { font-family: "Figtree"; src: url("assets/fonts/figtree-600.ttf"); font-weight: 600; }
+
+      :root {
+        --bg: #15110e;
+        --surface: #221c18;
+        --text: #f3ece5;
+        --muted: #b9ab9d;
+        --accent: #f28b4b;
+        --accent-deep: #e0603a;
+        --gold: #ffd48a;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+      #root {
+        position: relative; width: 100%; height: 100%; overflow: hidden;
+        background: var(--bg); color: var(--text); font-family: "Figtree", sans-serif;
+      }
+
+      /* ---------- persistent background ---------- */
+      .bg-layer { position: absolute; inset: 0; }
+      #glow {
+        position: absolute; width: 1500px; height: 1500px; left: 50%; top: 50%;
+        margin: -750px 0 0 -750px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(242, 139, 75, 0.30) 0%, rgba(242, 139, 75, 0.10) 35%, rgba(21, 17, 14, 0) 68%);
+      }
+      #dots {
+        position: absolute; inset: 0; opacity: 0.22;
+        background-image: radial-gradient(rgba(243, 236, 229, 0.35) 1.4px, transparent 1.6px);
+        background-size: 44px 44px;
+      }
+      #ghost {
+        position: absolute; left: -40px; bottom: -70px; font-family: "Urbanist"; font-weight: 700;
+        font-size: 360px; letter-spacing: -0.04em; color: rgba(243, 236, 229, 0.05); white-space: nowrap;
+      }
+      #rings { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      #rings svg { width: 1400px; height: 1400px; overflow: visible; }
+      .ring { fill: none; stroke: var(--accent); stroke-width: 3; }
+
+      /* ---------- scene 1: hook ---------- */
+      #s1 { position: absolute; inset: 0; overflow: hidden; }
+      #s1-photo-wrap { position: absolute; inset: -40px; }
+      #s1-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.9) brightness(0.62); }
+      #s1-shade {
+        position: absolute; inset: 0;
+        background: radial-gradient(ellipse at 50% 55%, rgba(21, 17, 14, 0.35) 0%, rgba(21, 17, 14, 0.88) 75%);
+      }
+      .hook-line {
+        position: absolute; left: 0; right: 0; top: 50%; margin-top: -90px; height: 180px;
+        display: flex; align-items: center; justify-content: center; gap: 36px;
+        font-family: "Urbanist"; font-weight: 700; font-size: 120px; letter-spacing: -0.03em; line-height: 1;
+      }
+      .hook-line .hl { color: var(--accent); }
+      #fan { width: 132px; height: 132px; display: block; }
+      #s1-counter-wrap {
+        position: absolute; left: 0; right: 0; top: 50%; margin-top: 110px;
+        display: flex; justify-content: center;
+      }
+      #s1-counter {
+        display: flex; align-items: baseline; gap: 18px; padding: 18px 40px; border-radius: 22px;
+        background: rgba(255, 107, 79, 0.16); border: 3px solid rgba(255, 107, 79, 0.75);
+        font-family: "Urbanist"; font-weight: 700; color: #ff8a6b;
+      }
+      #s1-counter .big { font-size: 84px; letter-spacing: -0.02em; min-width: 360px; }
+      #s1-counter .unit { font-family: "Figtree"; font-weight: 600; font-size: 30px; color: #ffc2b2; }
+      #flash { position: absolute; inset: 0; background: var(--accent); opacity: 0; pointer-events: none; }
+
+      /* ---------- scene 2: brand ---------- */
+      #s2 { position: absolute; inset: 0; }
+      #s2-inner { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #s2-logo { width: 230px; height: 230px; display: block; }
+      #s2-word { display: flex; margin-top: 26px; font-family: "Urbanist"; font-weight: 700; font-size: 150px; letter-spacing: -0.035em; line-height: 1; }
+      #s2-word span { display: inline-block; }
+      #s2-tag { margin-top: 26px; font-size: 44px; color: var(--muted); }
+      #s2-tag b { color: var(--text); font-weight: 600; }
+
+      /* ---------- the phone ---------- */
+      #stage { position: absolute; inset: 0; perspective: 2200px; perspective-origin: 50% 45%; }
+      #phoneRig {
+        position: absolute; left: 50%; top: 50%; width: 412px; height: 878px;
+        margin: -439px 0 0 -206px; transform-style: preserve-3d;
+      }
+      #phoneFloat { position: absolute; inset: 0; transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; border-radius: 62px; backface-visibility: hidden; }
+      #phoneFront {
+        background: #0d0a08; padding: 14px;
+        box-shadow: 0 0 0 3px #3a302a, 0 60px 120px rgba(0, 0, 0, 0.6), 0 0 90px rgba(242, 139, 75, 0.18);
+      }
+      #screen { position: relative; width: 384px; height: 850px; border-radius: 50px; overflow: hidden; background: #000; }
+      #screen video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+      #screenGloss {
+        position: absolute; inset: 0; border-radius: 50px; pointer-events: none;
+        background: linear-gradient(115deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 34%);
+      }
+      #phoneBack {
+        transform: rotateY(180deg);
+        background: radial-gradient(circle at 30% 20%, #3a2c22 0%, #1d1611 60%, #120d0a 100%);
+        box-shadow: 0 0 0 3px #3a302a, 0 60px 120px rgba(0, 0, 0, 0.6);
+        display: flex; align-items: center; justify-content: center;
+      }
+      #phoneBack img { width: 150px; height: 150px; display: block; opacity: 0.95; }
+      #camBump {
+        position: absolute; left: 40px; top: 40px; width: 130px; height: 130px; border-radius: 38px;
+        background: #0f0b08; box-shadow: inset 0 0 0 3px #3a302a;
+      }
+
+      /* things that pop OUT of the phone toward the viewer */
+      .pop { position: absolute; transform-style: preserve-3d; }
+      .pop-card {
+        background: rgba(34, 28, 24, 0.94); border: 2px solid rgba(242, 139, 75, 0.55); border-radius: 26px;
+        padding: 22px 26px; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55); color: var(--text);
+      }
+      .pop-card .label { font-family: "Figtree"; font-weight: 600; font-size: 22px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+      .pop-card .title { font-family: "Urbanist"; font-weight: 700; font-size: 36px; margin-top: 6px; line-height: 1.1; }
+      .pop-card .meta { font-size: 24px; color: var(--muted); margin-top: 6px; }
+      #pop-alert { left: -60px; top: 470px; width: 470px; }
+      #pop-alert .pop-card { border-color: rgba(255, 107, 79, 0.85); }
+      #pop-alert .label { color: #ff8a6b; }
+      #pop-scan { right: -60px; top: 520px; width: 420px; }
+      #pop-chat { left: -60px; top: 560px; width: 460px; }
+      #pop-chat .pop-card { background: var(--accent); border-color: var(--accent); color: #1a120d; }
+      #pop-chat .label { color: #3a1d0e; }
+      #pop-plan { right: -60px; top: 560px; width: 420px; }
+
+      /* ---------- feature copy ---------- */
+      .feature { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 150px; }
+      .feature.left { justify-content: flex-start; }
+      .feature.right { justify-content: flex-end; }
+      .copy { width: 760px; }
+      .kicker { display: flex; align-items: center; gap: 16px; font-family: "Figtree"; font-weight: 600; font-size: 26px; letter-spacing: 0.18em; color: var(--accent); }
+      .kicker .bar { width: 64px; height: 4px; background: var(--accent); border-radius: 2px; display: block; }
+      .headline { margin-top: 26px; font-family: "Urbanist"; font-weight: 700; font-size: 92px; line-height: 0.98; letter-spacing: -0.035em; }
+      .headline .w { display: inline-block; margin-right: 0.22em; }
+      .headline .hl { color: var(--accent); }
+      .sub { margin-top: 30px; font-size: 38px; line-height: 1.3; color: var(--muted); max-width: 700px; }
+
+      /* ---------- scene 8: lockup ---------- */
+      #s8 { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #s8-logo { width: 190px; height: 190px; display: block; }
+      #s8-word { margin-top: 22px; font-family: "Urbanist"; font-weight: 700; font-size: 132px; letter-spacing: -0.035em; line-height: 1; }
+      #s8-line { margin-top: 28px; font-family: "Urbanist"; font-weight: 600; font-size: 60px; letter-spacing: -0.02em; }
+      #s8-line .hl { color: var(--accent); }
+      #s8-urdu {
+        margin-top: 22px; padding: 10px 34px; border-radius: 14px; background: var(--accent); color: #1a120d;
+        font-family: "Urbanist"; font-weight: 700; font-size: 52px; letter-spacing: -0.01em;
+      }
+      #s8-feats { margin-top: 34px; display: flex; gap: 18px; }
+      #s8-feats span {
+        display: block; font-size: 26px; font-weight: 600; color: var(--text); padding: 12px 24px;
+        border: 2px solid rgba(243, 236, 229, 0.22); border-radius: 12px; background: rgba(34, 28, 24, 0.8);
+      }
+      #fadeout { position: absolute; inset: 0; background: #0b0806; opacity: 0; pointer-events: none; }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-i657" id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="45">
+      <!-- persistent background -->
+      <div data-hf-id="hf-iwgi" class="bg-layer" id="bg">
+        <div data-hf-id="hf-27c6" id="glow"></div>
+        <div data-hf-id="hf-wvbl" id="dots"></div>
+        <div data-hf-id="hf-rmmi" id="rings">
+          <svg data-hf-id="hf-cizn" viewBox="0 0 1400 1400">
+            <circle data-hf-id="hf-bgbb" class="ring" id="ring1" cx="700" cy="700" r="300" />
+            <circle data-hf-id="hf-orfg" class="ring" id="ring2" cx="700" cy="700" r="300" />
+            <circle data-hf-id="hf-gmm9" class="ring" id="ring3" cx="700" cy="700" r="300" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- SCENE 1 (0 - 5.9): the hook -->
+      <section data-hf-id="hf-nw4n" id="s1" class="clip" data-start="0" data-duration="5.9" data-track-index="1">
+        <div data-hf-id="hf-d940" id="s1-photo-wrap" data-layout-allow-overflow=""><img data-hf-id="hf-wvgj" id="s1-photo" src="assets/img/room-living-on.jpg" alt=""></div>
+        <div data-hf-id="hf-1pst" id="s1-shade"></div>
+        <div data-hf-id="hf-byi8" class="hook-line" id="hook1">
+          <svg data-hf-id="hf-6720" id="fan" viewBox="-60 -60 120 120">
+            <g data-hf-id="hf-vdbe" id="fanBlades" fill="#f28b4b">
+              <path data-hf-id="hf-0fwh" d="M0 -8 C 10 -30, 30 -52, 6 -56 C -12 -58, -10 -30, 0 -8 Z" />
+              <path data-hf-id="hf-cfrx" d="M0 -8 C 10 -30, 30 -52, 6 -56 C -12 -58, -10 -30, 0 -8 Z" transform="rotate(120)" />
+              <path data-hf-id="hf-qrfy" d="M0 -8 C 10 -30, 30 -52, 6 -56 C -12 -58, -10 -30, 0 -8 Z" transform="rotate(240)" />
+            </g>
+            <circle data-hf-id="hf-i5ym" r="10" fill="#f3ece5" />
+          </svg>
+          <span data-hf-id="hf-aw33">Your fan is still <span data-hf-id="hf-ffub" class="hl">spinning.</span></span>
+        </div>
+        <div data-hf-id="hf-kme3" class="hook-line" id="hook2"><span data-hf-id="hf-l1x3">Nobody's in the room.</span></div>
+        <div data-hf-id="hf-goa2" class="hook-line" id="hook3"><span data-hf-id="hf-0jqn">And you're <span data-hf-id="hf-14gb" class="hl">paying</span> for it.</span></div>
+        <div data-hf-id="hf-e3iz" id="s1-counter-wrap">
+          <div data-hf-id="hf-zcgy" id="s1-counter"><span data-hf-id="hf-pz4a" class="big" id="counterNum">Rs 0.00</span><span data-hf-id="hf-zz4b" class="unit">wasted, and counting</span></div>
+        </div>
+      </section>
+
+      <!-- SCENE 2 (5.9 - 10.9): brand reveal -->
+      <section data-hf-id="hf-mrmb" id="s2" class="clip" data-start="5.9" data-duration="5.0" data-track-index="1">
+        <div data-hf-id="hf-7thp" id="s2-inner">
+          <img data-hf-id="hf-tmkx" id="s2-logo" src="assets/img/logo-512.png" alt="WattWise logo">
+          <div data-hf-id="hf-d393" id="s2-word"><span data-hf-id="hf-e1fm">W</span><span data-hf-id="hf-zhz4">a</span><span data-hf-id="hf-r5jj">t</span><span data-hf-id="hf-b5yn">t</span><span data-hf-id="hf-sw12">W</span><span data-hf-id="hf-wbiw">i</span><span data-hf-id="hf-scgm">s</span><span data-hf-id="hf-xwr0">e</span></div>
+          <div data-hf-id="hf-envv" id="s2-tag">Your <b data-hf-id="hf-489t">Wi-Fi</b> is now an energy sensor.</div>
+        </div>
+      </section>
+
+      <!-- FEATURE COPY (scenes 3-7) -->
+      <section data-hf-id="hf-v12a" id="f3" class="feature left clip" data-start="10.9" data-duration="7.05" data-track-index="2">
+        <div data-hf-id="hf-bdx3" class="copy">
+          <div data-hf-id="hf-4mib" class="kicker"><span data-hf-id="hf-flu0" class="bar"></span>01 · SENSE</div>
+          <div data-hf-id="hf-sodk" class="headline"><span data-hf-id="hf-69s8" class="w">Knows</span><span data-hf-id="hf-rqwg" class="w">when</span><span data-hf-id="hf-b7a3" class="w">a</span><span data-hf-id="hf-6tmz" class="w">room</span><span data-hf-id="hf-fj2o" class="w">is</span><span data-hf-id="hf-qeup" class="w hl">empty.</span></div>
+          <div data-hf-id="hf-52py" class="sub">Wi-Fi ripples tell empty, sitting or walking. No camera, no microphone.</div>
+        </div>
+      </section>
+      <section data-hf-id="hf-syky" id="f4" class="feature right clip" data-start="17.95" data-duration="4.8" data-track-index="2">
+        <div data-hf-id="hf-r8s7" class="copy">
+          <div data-hf-id="hf-w28i" class="kicker"><span data-hf-id="hf-78ow" class="bar"></span>02 · ALERT</div>
+          <div data-hf-id="hf-ywrk" class="headline"><span data-hf-id="hf-sdnt" class="w">Left</span><span data-hf-id="hf-cqxh" class="w">it</span><span data-hf-id="hf-aviy" class="w">on?</span><span data-hf-id="hf-ga6g" class="w hl">You'll</span><span data-hf-id="hf-f0gz" class="w hl">know.</span></div>
+          <div data-hf-id="hf-hzkr" class="sub">A phone alert with what it's costing you, per hour.</div>
+        </div>
+      </section>
+      <section data-hf-id="hf-w9ja" id="f5" class="feature left clip" data-start="22.75" data-duration="5.5" data-track-index="2">
+        <div data-hf-id="hf-quh6" class="copy">
+          <div data-hf-id="hf-fxug" class="kicker"><span data-hf-id="hf-61rt" class="bar"></span>03 · SCAN</div>
+          <div data-hf-id="hf-xpuh" class="headline"><span data-hf-id="hf-iogc" class="w">One</span><span data-hf-id="hf-mliu" class="w">photo.</span><span data-hf-id="hf-i68v" class="w hl">A</span><span data-hf-id="hf-wos5" class="w hl">year</span><span data-hf-id="hf-q3mx" class="w">of</span><span data-hf-id="hf-ayzo" class="w">bills.</span></div>
+          <div data-hf-id="hf-fnsj" class="sub">AI reads the 12-month history printed on your bill, in seconds.</div>
+        </div>
+      </section>
+      <section data-hf-id="hf-cm54" id="f6" class="feature right clip" data-start="28.25" data-duration="5.55" data-track-index="2">
+        <div data-hf-id="hf-qg65" class="copy">
+          <div data-hf-id="hf-1g2n" class="kicker"><span data-hf-id="hf-6g2u" class="bar"></span>04 · ASK</div>
+          <div data-hf-id="hf-y45i" class="headline"><span data-hf-id="hf-2uma" class="w">Why</span><span data-hf-id="hf-kwtk" class="w">is</span><span data-hf-id="hf-kzk2" class="w">my</span><span data-hf-id="hf-25ut" class="w">bill</span><span data-hf-id="hf-j9wa" class="w">so</span><span data-hf-id="hf-onjp" class="w hl">high?</span></div>
+          <div data-hf-id="hf-wx1s" class="sub">Answers from your own data, in English or Urdu.</div>
+        </div>
+      </section>
+      <section data-hf-id="hf-cnaf" id="f7" class="feature left clip" data-start="33.8" data-duration="4.9" data-track-index="2">
+        <div data-hf-id="hf-t8bc" class="copy">
+          <div data-hf-id="hf-m9u4" class="kicker"><span data-hf-id="hf-595r" class="bar"></span>05 · PLAN</div>
+          <div data-hf-id="hf-wx8f" class="headline"><span data-hf-id="hf-send" class="w">Next</span><span data-hf-id="hf-iqni" class="w">month,</span><span data-hf-id="hf-8864" class="w hl">planned.</span><span data-hf-id="hf-q41z" class="w">Solar,</span><span data-hf-id="hf-pior" class="w hl">answered.</span></div>
+          <div data-hf-id="hf-g9r4" class="sub">A step-by-step plan, and a solar estimate for your own roof.</div>
+        </div>
+      </section>
+
+      <!-- THE PHONE (persistent; screens are timed videos inside it) -->
+      <div data-hf-id="hf-1rt5" id="stage">
+        <div data-hf-id="hf-e8ln" id="phoneRig">
+          <div data-hf-id="hf-a5xr" id="phoneFloat">
+            <div data-hf-id="hf-yvim" class="face" id="phoneBack">
+              <div data-hf-id="hf-28rm" id="camBump"></div>
+              <img data-hf-id="hf-k70h" src="assets/img/logo-512.png" alt="">
+            </div>
+            <div data-hf-id="hf-8os8" class="face" id="phoneFront">
+              <div data-hf-id="hf-ccvt" id="screen">
+                <video data-hf-id="hf-tlut" id="v2" src="assets/screens/s2_home.mp4" muted playsinline data-start="9.3" data-duration="1.6" data-track-index="3"></video>
+                <video data-hf-id="hf-7gmy" id="v3" src="assets/screens/s3_wifi.mp4" muted playsinline data-start="10.9" data-duration="7.05" data-track-index="3"></video>
+                <video data-hf-id="hf-eph3" id="v4" src="assets/screens/s4_alert.mp4" muted playsinline data-start="17.95" data-duration="4.8" data-track-index="3"></video>
+                <video data-hf-id="hf-f5uk" id="v5" src="assets/screens/s5_scan.mp4" muted playsinline data-start="22.75" data-duration="5.5" data-track-index="3"></video>
+                <video data-hf-id="hf-83ih" id="v6" src="assets/screens/s6_chat.mp4" muted playsinline data-start="28.25" data-duration="5.55" data-track-index="3"></video>
+                <video data-hf-id="hf-tkyf" id="v7" src="assets/screens/s7_plan.mp4" muted playsinline data-start="33.8" data-duration="4.9" data-track-index="3"></video>
+                <video data-hf-id="hf-trl5" id="v8" src="assets/screens/s8_home.mp4" muted playsinline data-start="38.7" data-duration="3.0" data-track-index="3"></video>
+                <div data-hf-id="hf-stf5" id="screenGloss"></div>
+              </div>
+            </div>
+
+            <div data-hf-id="hf-rx2a" class="pop" id="pop-alert" data-start="19.3" data-duration="3.3" data-track-index="4">
+              <div data-hf-id="hf-h15l" class="pop-card" id="pop-alert-card">
+                <div data-hf-id="hf-jk0w" class="label">AC left on</div>
+                <div data-hf-id="hf-07m7" class="title">Room is empty. Save about Rs 50 an hour.</div>
+                <div data-hf-id="hf-s9nb" class="meta">Tap: I turned it off</div>
+              </div>
+            </div>
+            <div data-hf-id="hf-o3vt" class="pop" id="pop-scan" data-start="25.4" data-duration="2.75" data-track-index="4">
+              <div data-hf-id="hf-0d6u" class="pop-card" id="pop-scan-card">
+                <div data-hf-id="hf-1drk" class="label">Bill saved</div>
+                <div data-hf-id="hf-hglv" class="title">July 2026 · 416 units</div>
+                <div data-hf-id="hf-6r0l" class="meta">+ 11 earlier months from the bill</div>
+              </div>
+            </div>
+            <div data-hf-id="hf-zviz" class="pop" id="pop-chat" data-start="29.0" data-duration="4.65" data-track-index="4">
+              <div data-hf-id="hf-z12h" class="pop-card" id="pop-chat-card">
+                <div data-hf-id="hf-pdmx" class="label">You asked</div>
+                <div data-hf-id="hf-ak0a" class="title">Why is my bill so high this month?</div>
+              </div>
+            </div>
+            <div data-hf-id="hf-j6ix" class="pop" id="pop-plan" data-start="35.6" data-duration="3.0" data-track-index="4">
+              <div data-hf-id="hf-qzwo" class="pop-card" id="pop-plan-card">
+                <div data-hf-id="hf-zkkb" class="label">Solar estimate</div>
+                <div data-hf-id="hf-0tmx" class="title">About 4 panels + a battery</div>
+                <div data-hf-id="hf-pc8x" class="meta">Rules checked for Faisalabad, Pakistan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 8 (38.7 - 45): lockup -->
+      <section data-hf-id="hf-pqy2" id="s8" class="clip" data-start="40.6" data-duration="4.4" data-track-index="5">
+        <img data-hf-id="hf-r3ej" id="s8-logo" src="assets/img/logo-512.png" alt="WattWise logo">
+        <div data-hf-id="hf-rxad" id="s8-word">WattWise</div>
+        <div data-hf-id="hf-b7cs" id="s8-line">Stop paying for <span data-hf-id="hf-l0xo" class="hl">empty rooms.</span></div>
+        <div id="s8-urdu">Bijli bachao.</div>
+        <div data-hf-id="hf-mavc" id="s8-feats"><span data-hf-id="hf-bvhw">Wi-Fi sensing</span><span data-hf-id="hf-0it8">AI bill reading</span><span data-hf-id="hf-w21v">AI assistant</span><span data-hf-id="hf-50h6">Solar advisor</span></div>
+      </section>
+
+      <div data-hf-id="hf-hmg5" id="flash"></div>
+      <div data-hf-id="hf-f2ap" id="fadeout"></div>
+
+      <!-- AUDIO: one narration file, trimmed into 8 lines and placed on the cut; music bed underneath -->
+      <audio data-hf-id="hf-bjqg" id="vo1" src="assets/vo_full.wav" data-start="0.5" data-media-start="0" data-duration="5.05" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-npn5" id="vo2" src="assets/vo_full.wav" data-start="6.05" data-media-start="6.75" data-duration="4.75" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-y0q2" id="vo3" src="assets/vo_full.wav" data-start="11.1" data-media-start="13.0" data-duration="6.75" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-sz0r" id="vo4" src="assets/vo_full.wav" data-start="18.15" data-media-start="21.35" data-duration="4.5" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-b1y1" id="vo5" src="assets/vo_full.wav" data-start="22.95" data-media-start="27.45" data-duration="5.25" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-o6ze" id="vo6" src="assets/vo_full.wav" data-start="28.45" data-media-start="34.05" data-duration="5.2" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-nn7m" id="vo7" src="assets/vo_full.wav" data-start="34.0" data-media-start="40.75" data-duration="4.55" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-5v1q" id="vo8" src="assets/vo_full.wav" data-start="40.7" data-media-start="46.65" data-duration="3.45" data-track-index="10" data-volume="1"></audio>
+      <audio data-hf-id="hf-656u" id="music" src="assets/music_ducked.wav" data-start="0" data-duration="45" data-track-index="11" data-volume="0.5"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const D = 45;
+
+      // ---------- ambient background (runs the whole film) ----------
+      tl.fromTo("#glow", { scale: 0.85, opacity: 0.7 }, { scale: 1.12, opacity: 1, duration: 3.2, ease: "sine.inOut", yoyo: true, repeat: 13 }, 0);
+      tl.fromTo("#dots", { backgroundPositionY: "0px" }, { backgroundPositionY: "-220px", duration: D, ease: "none" }, 0);
+      tl.set("#bg", { opacity: 0 }, 0);
+      tl.to("#bg", { opacity: 1, duration: 0.4 }, 5.9);
+      // Wi-Fi ripples: three rings breathing outward from the phone, staggered
+      ["#ring1", "#ring2", "#ring3"].forEach((r, i) => {
+        tl.fromTo(r, { scale: 0.55, opacity: 0.55, transformOrigin: "50% 50%" }, { scale: 2.1, opacity: 0, duration: 2.7, ease: "power1.out", repeat: 14 }, 5.9 + i * 0.9);
+      });
+
+      // ---------- SCENE 1: hook (0 - 5.9) ----------
+      tl.fromTo("#s1-photo-wrap", { scale: 1.18 }, { scale: 1.0, duration: 5.9, ease: "power1.out" }, 0);
+      tl.fromTo("#fanBlades", { rotation: 0, transformOrigin: "50% 50%" }, { rotation: 1440, duration: 2.0, ease: "none" }, 0);
+      tl.fromTo("#hook1", { opacity: 0, scale: 1.35, filter: "blur(18px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.15);
+      tl.to("#hook1", { opacity: 0, y: -60, duration: 0.25, ease: "power2.in" }, 1.95);
+      tl.fromTo("#hook2", { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.6)" }, 2.15);
+      tl.to("#hook2", { opacity: 0, scale: 0.85, duration: 0.25, ease: "power2.in" }, 3.35);
+      tl.fromTo("#hook3", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 3.55);
+      tl.fromTo("#s1-counter", { opacity: 0, y: 40, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "power3.out" }, 3.75);
+      const counter = { v: 0 };
+      tl.fromTo(counter, { v: 0 }, {
+        v: 52.4, duration: 1.9, ease: "power2.in",
+        onUpdate: () => { document.getElementById("counterNum").textContent = "Rs " + counter.v.toFixed(2); },
+      }, 3.8);
+      tl.to("#s1-counter", { scale: 1.08, duration: 0.18, ease: "power2.out", yoyo: true, repeat: 1 }, 5.45);
+      tl.fromTo("#flash", { opacity: 0 }, { opacity: 0.85, duration: 0.12, ease: "power2.in" }, 5.78);
+      tl.to("#flash", { opacity: 0, duration: 0.5, ease: "power2.out" }, 5.9);
+
+      // ---------- SCENE 2: brand (5.9 - 10.9) ----------
+      tl.fromTo("#s2-logo", { scale: 0, rotation: -120 }, { scale: 1, rotation: 0, duration: 0.9, ease: "back.out(1.7)" }, 6.0);
+      tl.fromTo("#s2-word span", { opacity: 0, y: 60, rotationX: -80 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.55, ease: "power3.out", stagger: 0.05 }, 6.55);
+      tl.fromTo("#s2-tag", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 7.6);
+      tl.to("#s2-inner", { y: -140, scale: 0.8, opacity: 0, duration: 0.7, ease: "power2.in" }, 9.7);
+
+      // ---------- THE PHONE ----------
+      // hidden until it rises at the end of scene 2
+      tl.set("#phoneRig", { opacity: 0, x: 0, y: 900, rotationX: 38, rotationY: -30, rotationZ: 6, scale: 0.9 }, 0);
+      tl.to("#phoneRig", { opacity: 1, duration: 0.3 }, 9.35);
+      tl.to("#phoneRig", { y: 0, rotationX: 6, rotationY: -16, rotationZ: 0, x: 420, scale: 1, duration: 1.45, ease: "power3.out" }, 9.35);
+      // idle float for the rest of the film
+      tl.fromTo("#phoneFloat", { y: 10 }, { y: -14, duration: 1.7, ease: "sine.inOut", yoyo: true, repeat: 19 }, 9.6);
+
+      // S3 (10.9 - 17.95): slow self-rotate toward camera, then a camera push in
+      tl.to("#phoneRig", { rotationY: -7, rotationX: 2, duration: 3.4, ease: "sine.inOut" }, 11.0);
+      tl.to("#phoneRig", { scale: 1.12, duration: 2.6, ease: "power2.inOut" }, 14.6);
+
+      // S3 -> S4: swing to the left, turning to face the copy
+      tl.to("#phoneRig", { x: -420, rotationY: 18, rotationZ: -3, scale: 1.02, duration: 0.75, ease: "power3.inOut" }, 17.6);
+      tl.to("#phoneRig", { rotationZ: 0, rotationY: 10, duration: 3.0, ease: "sine.inOut" }, 18.4);
+
+      // S4 -> S5: full 360 spin while crossing to the right (shows the back)
+      tl.to("#phoneRig", { x: 420, rotationY: -376, rotationX: 4, scale: 0.94, duration: 1.0, ease: "power3.inOut" }, 22.3);
+      tl.to("#phoneRig", { rotationY: -368, scale: 1.06, duration: 4.4, ease: "sine.inOut" }, 23.4);
+
+      // S5 -> S6: swing left and come CLOSER (camera push)
+      tl.to("#phoneRig", { x: -400, rotationY: -344, rotationX: 0, scale: 1.16, duration: 0.8, ease: "power3.inOut" }, 27.9);
+      tl.to("#phoneRig", { rotationY: -352, scale: 1.08, duration: 4.4, ease: "sine.inOut" }, 28.8);
+
+      // S6 -> S7: cross back to the right, pull back a little
+      tl.to("#phoneRig", { x: 420, rotationY: -376, rotationX: 5, scale: 0.98, duration: 0.8, ease: "power3.inOut" }, 33.45);
+      tl.to("#phoneRig", { rotationY: -368, duration: 3.8, ease: "sine.inOut" }, 34.3);
+
+      // S8: phone comes to centre, faces us, then flies away into the distance
+      tl.to("#phoneRig", { x: 0, rotationY: -360, rotationX: 0, scale: 1.18, duration: 1.0, ease: "power3.inOut" }, 38.45);
+      tl.to("#phoneRig", { scale: 0.35, y: -60, rotationX: 28, rotationY: -320, opacity: 0, duration: 1.2, ease: "power3.in" }, 40.0);
+
+      // ---------- feature copy entrances / exits ----------
+      function featureIn(id, t, dur) {
+        tl.fromTo(`${id} .kicker`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, t + 0.1);
+        tl.fromTo(`${id} .kicker .bar`, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.5, ease: "expo.out" }, t + 0.1);
+        tl.fromTo(`${id} .headline .w`, { opacity: 0, y: 70, rotationX: -50 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.55, ease: "back.out(1.4)", stagger: 0.06 }, t + 0.22);
+        tl.fromTo(`${id} .sub`, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, t + 0.75);
+        tl.to(`${id} .copy`, { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, t + dur - 0.35);
+      }
+      featureIn("#f3", 10.9, 7.05);
+      featureIn("#f4", 17.95, 4.8);
+      featureIn("#f5", 22.75, 5.5);
+      featureIn("#f6", 28.25, 5.55);
+      featureIn("#f7", 33.8, 4.9);
+
+      // ---------- pop-out cards (spring out of the phone toward the viewer) ----------
+      function popOut(card, t, dur, fromX) {
+        tl.fromTo(card, { opacity: 0, x: fromX, z: -60, scale: 0.6, rotationY: fromX > 0 ? -25 : 25 },
+          { opacity: 1, x: 0, z: 140, scale: 1, rotationY: 0, duration: 0.6, ease: "back.out(1.8)" }, t);
+        tl.to(card, { y: -10, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, t + 0.6);
+        tl.to(card, { opacity: 0, scale: 0.85, duration: 0.25, ease: "power2.in" }, t + dur - 0.3);
+      }
+      popOut("#pop-alert-card", 19.3, 3.3, 120);
+      popOut("#pop-scan-card", 25.4, 2.75, -120);
+      popOut("#pop-chat-card", 29.0, 4.65, 120);
+      popOut("#pop-plan-card", 35.6, 3.0, -120);
+
+      // ---------- SCENE 8: lockup ----------
+      tl.fromTo("#s8-logo", { scale: 0, rotation: -90 }, { scale: 1, rotation: 0, duration: 0.8, ease: "back.out(1.8)" }, 40.7);
+      tl.fromTo("#s8-word", { opacity: 0, y: 40, scale: 1.12 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 41.0);
+      tl.fromTo("#s8-line", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 41.45);
+      tl.fromTo("#s8-urdu", { opacity: 0, scale: 0.6, rotation: -4 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.5, ease: "back.out(2.2)" }, 42.0);
+      tl.fromTo("#s8-feats span", { opacity: 0, y: 24, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.6)", stagger: 0.09 }, 42.5);
+      tl.to("#fadeout", { opacity: 1, duration: 0.5, ease: "power1.in" }, 44.5);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 import * as Location from "expo-location";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, Line, Rect } from "react-native-svg";
 import { Badge } from "../components/Badge";
@@ -314,7 +314,9 @@ export function SolarScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      {/* Lift the form above the keyboard (Android edge-to-edge no longer resizes the window). */}
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {/* Explanations sit behind small "i" buttons so the page stays short. */}
         <InfoTip label={t("solarTitle")} labelStyle={styles.title} info={t("solarIntro")} />
 
@@ -537,6 +539,7 @@ export function SolarScreen() {
           </>
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../../components/Button";
 import { Card } from "../../components/Card";
@@ -46,7 +46,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   return (
     <AuthBackground>
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <LogoMark size={56} />
         <Text style={styles.title}>{t("resetPassword")}</Text>
 
@@ -66,6 +67,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           )}
         </Card>
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
     </AuthBackground>
   );

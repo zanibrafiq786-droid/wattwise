@@ -25,11 +25,14 @@ export function BillHistoryChart({ bills }: { bills: BillEntry[] }) {
   const maxUnits = Math.max(SLAB_LIMIT * 1.2, ...last12.map((b) => b.units));
   const barGap = 6;
   const barWidth = last12.length > 0 ? CHART_WIDTH / last12.length - barGap : 0;
-  const slabY = CHART_HEIGHT - (SLAB_LIMIT / maxUnits) * CHART_HEIGHT;
+  // Room above the bars for each month's unit label.
+  const TOP = 14;
+  const slabY = TOP + CHART_HEIGHT - (SLAB_LIMIT / maxUnits) * CHART_HEIGHT;
 
   return (
     <View style={styles.wrap}>
-      <Svg width={CHART_WIDTH} height={CHART_HEIGHT + 10}>
+      <Text style={styles.axisNote}>Units per month</Text>
+      <Svg width="100%" height={CHART_HEIGHT + TOP + 4} viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT + TOP + 4}`}>
         <Line
           x1={0}
           y1={slabY}
@@ -45,18 +48,29 @@ export function BillHistoryChart({ bills }: { bills: BillEntry[] }) {
         {last12.map((b, i) => {
           const barHeight = (b.units / maxUnits) * CHART_HEIGHT;
           const x = i * (barWidth + barGap);
-          const y = CHART_HEIGHT - barHeight;
+          const y = TOP + CHART_HEIGHT - barHeight;
           const overLimit = b.units > SLAB_LIMIT;
           return (
-            <Rect
-              key={b.month}
-              x={x}
-              y={y}
-              width={barWidth}
-              height={Math.max(2, barHeight)}
-              rx={3}
-              fill={overLimit ? colors.danger : colors.primary}
-            />
+            <React.Fragment key={b.month}>
+              <Rect
+                x={x}
+                y={y}
+                width={barWidth}
+                height={Math.max(2, barHeight)}
+                rx={3}
+                fill={overLimit ? colors.danger : colors.primary}
+              />
+              <SvgText
+                x={x + barWidth / 2}
+                y={y - 3}
+                fontSize={8}
+                fontWeight="bold"
+                fill={overLimit ? colors.danger : colors.text}
+                textAnchor="middle"
+              >
+                {Math.round(b.units)}
+              </SvgText>
+            </React.Fragment>
           );
         })}
       </Svg>
@@ -89,6 +103,7 @@ function LegendDot({ color, label }: { color: string; label: string }) {
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     wrap: { gap: spacing.sm },
+    axisNote: { color: colors.textMuted, fontSize: 11 },
     labelsRow: { flexDirection: "row", justifyContent: "space-between" },
     monthLabel: { color: colors.textMuted, fontSize: 9, flex: 1, textAlign: "center" },
     legendRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },

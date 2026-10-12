@@ -54,21 +54,35 @@ export function useChatMessages(uid: string | null) {
     let requests: Record<string, ChatRequest> = {};
     let replies: Record<string, ChatReply> = {};
 
+    // Each reply is placed directly after ITS request (replies are keyed by
+    // request id), not sorted by timestamp: request ts comes from the
+    // phone's clock and reply ts from the laptop's, and any skew between the
+    // two clocks used to put an answer above its question -- which also made
+    // the follow-up suggestions show at the wrong moment.
     function rebuild() {
+      const reqIds = Object.keys(requests).sort(
+        (a, b) => requests[a].ts - requests[b].ts || a.localeCompare(b)
+      );
       const list: ChatMessage[] = [];
-      for (const [id, r] of Object.entries(requests)) {
+      for (const id of reqIds) {
+        const r = requests[id];
         list.push({ id, role: "user", text: r.text, ts: r.ts });
+        const rep = replies[id];
+        if (rep) {
+          list.push({
+            id: id + "-reply",
+            role: "assistant",
+            text: rep.text,
+            ts: rep.ts,
+            suggestions: rep.suggestions,
+            status: rep.status,
+          });
+        }
       }
-      for (const [id, r] of Object.entries(replies)) {
-        list.push({ id: id + "-reply", role: "assistant", text: r.text, ts: r.ts, suggestions: r.suggestions, status: r.status });
-      }
-      list.sort((a, b) => a.ts - b.ts);
       setMessages(list);
 
-      const unanswered = Object.keys(requests)
-        .filter((id) => !(id in replies))
-        .sort((a, b) => requests[a].ts - requests[b].ts);
-      setPendingRequestId(unanswered[unanswered.length - 1] ?? null);
+      const last = reqIds[reqIds.length - 1];
+      setPendingRequestId(last && !(last in replies) ? last : null);
     }
 
     const unsubReq = onValue(requestsRef, (snap) => {
@@ -90,8 +104,10 @@ export function useChatMessages(uid: string | null) {
 }
 
 // Shows a "the assistant is offline" state if a request has been pending
-// for more than 25 seconds with no reply (CHATBOT_SOLAR.md A1).
-export function usePendingTimeout(pendingRequestId: string | null, timeoutMs = 25000) {
+// too long with no reply (CHATBOT_SOLAR.md A1). 60 s, not 25 s: on this
+// network a real reply measured 30-40 s, so 25 s flagged a working
+// assistant as offline right before its answer arrived.
+export function usePendingTimeout(pendingRequestId: string | null, timeoutMs = 60000) {
   const [timedOut, setTimedOut] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 

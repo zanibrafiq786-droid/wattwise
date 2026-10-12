@@ -78,8 +78,9 @@ export function computeWasteReport(
   const totalRsLow = appliances.reduce((s, a) => s + a.rsLow, 0);
   const totalRsHigh = appliances.reduce((s, a) => s + a.rsHigh, 0);
 
-  const percentOfBillLow = bill && bill.amount_rs > 0 ? (totalRsLow / bill.amount_rs) * 100 : null;
-  const percentOfBillHigh = bill && bill.amount_rs > 0 ? (totalRsHigh / bill.amount_rs) * 100 : null;
+  const amount = bill?.amount_rs ?? 0;
+  const percentOfBillLow = amount > 0 ? (totalRsLow / amount) * 100 : null;
+  const percentOfBillHigh = amount > 0 ? (totalRsHigh / amount) * 100 : null;
 
   const daysCovered =
     events.length > 1 ? (events[events.length - 1].ts - events[0].ts) / 1000 / 86400 : 0;

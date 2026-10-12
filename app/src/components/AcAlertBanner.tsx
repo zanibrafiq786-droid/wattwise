@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { logAcTurnedOff, setAcOn, setAlertStatus, useAlerts } from "../lib/firebase";
 import { Colors, radius, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 import { Button } from "./Button";
+import { StatusMessage } from "./StatusMessage";
 
 // Expo Go can't show OS notifications (see lib/notifications.ts), so this is
 // the actual alert surface for "AC left on": a banner shown over whatever
@@ -16,19 +17,37 @@ export function AcAlertBanner({ room = "room1" }: { room?: string }) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const active = alerts?.find((a) => a.type === "ac_left_on" && a.status === "new");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!active) return null;
 
   async function handleTurnedOff() {
-    if (!active) return;
-    await setAcOn(room, false);
-    await setAlertStatus(active.id, "acted");
-    await logAcTurnedOff(room, active.id);
+    if (!active || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await setAcOn(room, false);
+      await setAlertStatus(active.id, "acted");
+      await logAcTurnedOff(room, active.id);
+    } catch {
+      setError("That didn't go through. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleIgnore() {
-    if (!active) return;
-    await setAlertStatus(active.id, "dismissed");
+    if (!active || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await setAlertStatus(active.id, "dismissed");
+    } catch {
+      setError("That didn't go through. Check your connection and try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -38,9 +57,10 @@ export function AcAlertBanner({ room = "room1" }: { room?: string }) {
           <Text style={styles.title}>AC left on</Text>
           <Text style={styles.message}>{active.message}</Text>
           <View style={styles.actions}>
-            <Button label="I turned it off" variant="primary" onPress={handleTurnedOff} />
-            <Button label="Ignore" variant="secondary" onPress={handleIgnore} />
+            <Button label="I turned it off" variant="primary" onPress={handleTurnedOff} disabled={busy} />
+            <Button label="Ignore" variant="secondary" onPress={handleIgnore} disabled={busy} />
           </View>
+          <StatusMessage type="error" message={error} />
         </View>
       </SafeAreaView>
     </View>

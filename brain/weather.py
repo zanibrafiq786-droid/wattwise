@@ -25,9 +25,18 @@ def _cache_path(lat: float, lon: float) -> Path:
 def get_hourly_irradiance(lat: float = 31.42, lon: float = 73.08) -> list:
     """Returns a list of ~8760 hourly shortwave_radiation values (W/m^2)
     for the most recent full 12 months at this location. Cached on disk."""
+    return get_hourly_irradiance_meta(lat, lon)["values"]
+
+
+def get_hourly_irradiance_meta(lat: float = 31.42, lon: float = 73.08) -> dict:
+    """Same data as get_hourly_irradiance(), plus the series' start date so
+    solar_geometry.py can turn each index into a real date/hour (needed to
+    work out where the sun actually was for the roof-angle calculation)."""
     cache_file = _cache_path(lat, lon)
     if cache_file.exists() and (time.time() - cache_file.stat().st_mtime) < CACHE_MAX_AGE_SECONDS:
-        return json.loads(cache_file.read_text())["values"]
+        cached = json.loads(cache_file.read_text())
+        if "start_date" in cached:
+            return cached
 
     end = date.today() - timedelta(days=7)  # archive API lags a few days behind today
     start = end.replace(year=end.year - 1) + timedelta(days=1)
@@ -48,8 +57,9 @@ def get_hourly_irradiance(lat: float = 31.42, lon: float = 73.08) -> list:
     values = resp.json()["hourly"]["shortwave_radiation"]
     values = [v if v is not None else 0.0 for v in values]
 
-    cache_file.write_text(json.dumps({"lat": lat, "lon": lon, "fetched_at": time.time(), "values": values}))
-    return values
+    data = {"lat": lat, "lon": lon, "fetched_at": time.time(), "start_date": start.isoformat(), "values": values}
+    cache_file.write_text(json.dumps(data))
+    return data
 
 
 def specific_yield_kwh_per_kw(ghi_series: list, pr: float = 0.75) -> float:

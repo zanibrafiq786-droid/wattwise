@@ -32,24 +32,27 @@ function angleForValue(value: number) {
 }
 
 // WattWise's "signature element" (DESIGN-v2.md section 5): a 250-degree
-// arc dial, 0-240 units, a marker at the 200-unit slab, and the projected
-// bill in the centre. Built from the same waste/forecast numbers already
-// computed elsewhere in the app -- no new data source, just a new view of it.
+// arc dial, 0-240 units, a marker at the 200-unit slab. The centre leads
+// with the UNITS (the number that decides the slab), then how far over or
+// under 200 it is, then the bill amount.
 export function MonthDial({
   unitsUsed,
-  projectedUnits,
-  projectedRs,
+  monthLabel,
+  amountLabel,
 }: {
   unitsUsed: number;
-  projectedUnits: number;
-  projectedRs: number;
+  monthLabel: string;
+  // What the bill says, already labelled (e.g. "Rs 784 credit" for a solar
+  // net-metering bill), or null to show units only.
+  amountLabel: string | null;
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const fillAngle = angleForValue(unitsUsed);
   const slabAngle = angleForValue(SLAB_LIMIT);
   const endAngle = START_ANGLE + SWEEP;
-  const overSlab = projectedUnits > SLAB_LIMIT;
+  const overSlab = unitsUsed > SLAB_LIMIT;
+  const diff = Math.round(Math.abs(SLAB_LIMIT - unitsUsed));
 
   const ticks = Array.from({ length: 37 }, (_, i) => i);
 
@@ -85,10 +88,12 @@ export function MonthDial({
         <Circle cx={polar(fillAngle, R).x} cy={polar(fillAngle, R).y} r={9} fill={colors.text} stroke={colors.bg} strokeWidth={2} />
       </Svg>
       <View style={styles.center} pointerEvents="none">
-        <Text style={[styles.value, overSlab && { color: colors.danger }]}>Rs {Math.round(projectedRs)}</Text>
-        <Text style={styles.sub}>
-          {unitsUsed.toFixed(0)} units now, {projectedUnits.toFixed(0)} projected
+        <Text style={[styles.value, overSlab && { color: colors.danger }]}>{Math.round(unitsUsed)}</Text>
+        <Text style={styles.unitLabel}>units · {monthLabel}</Text>
+        <Text style={[styles.status, { color: overSlab ? colors.danger : colors.success }]}>
+          {overSlab ? `${diff} over the 200 slab` : `${diff} left before 200`}
         </Text>
+        {amountLabel !== null && <Text style={styles.sub}>Bill: {amountLabel}</Text>}
       </View>
     </View>
   );
@@ -97,8 +102,10 @@ export function MonthDial({
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     wrap: { width: SIZE, height: SIZE, alignItems: "center", justifyContent: "center" },
-    center: { position: "absolute", alignItems: "center", gap: 4, paddingHorizontal: spacing.lg },
-    value: { color: colors.text, fontSize: 28, fontFamily: fonts.heading },
+    center: { position: "absolute", alignItems: "center", gap: 2, paddingHorizontal: spacing.lg },
+    value: { color: colors.text, fontSize: 44, fontFamily: fonts.heading, lineHeight: 48 },
+    unitLabel: { color: colors.textMuted, fontSize: 12 },
+    status: { fontSize: 12, fontFamily: fonts.bodySemiBold, marginTop: 4 },
     sub: { color: colors.textMuted, fontSize: 11, textAlign: "center" },
   });
 }

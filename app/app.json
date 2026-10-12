@@ -1,6 +1,7 @@
 {
   "expo": {
-    "name": "Room Energy",
+    "name": "WattWise",
+    "description": "WattWise watches one room for presence and appliance use, alerts you when the light, fan, or AC are left on empty, and matches the waste to your real electricity bill.",
     "slug": "room-energy",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -30,7 +31,13 @@
     "owner": "zainab87s-team",
     "plugins": [
       "expo-sharing",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "WattWise uses your location to look up real sun/weather data for your area's solar estimate."
+        }
+      ]
     ]
   }
 }

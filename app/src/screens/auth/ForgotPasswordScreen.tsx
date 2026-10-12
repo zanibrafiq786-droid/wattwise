@@ -72,7 +72,7 @@ function makeStyles(colors: Colors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg },
     content: { padding: spacing.lg, gap: spacing.md, flexGrow: 1, justifyContent: "center", alignItems: "center" },
-    title: { color: colors.text, fontSize: 30, fontFamily: fonts.heading, marginBottom: spacing.sm },
+    title: { color: colors.text, fontSize: 30, fontFamily: fonts.headingMedium, marginBottom: spacing.sm },
     card: { width: "100%", gap: spacing.md },
     subtle: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
     error: { color: colors.danger, fontSize: 13 },

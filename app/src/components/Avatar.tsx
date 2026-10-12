@@ -23,12 +23,16 @@ export function Avatar({
   name: string | null;
   email: string | null | undefined;
   size?: number;
-  onPress: () => void;
+  onPress?: () => void;
 }) {
   const colors = useColors();
   const styles = makeStyles(colors);
   return (
-    <Pressable style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]} onPress={onPress}>
+    <Pressable
+      style={[styles.circle, { width: size, height: size, borderRadius: size / 2 }]}
+      onPress={onPress}
+      disabled={!onPress}
+    >
       <Text style={[styles.initials, { fontSize: size * 0.34 }]}>{initialsFor(name, email)}</Text>
     </Pressable>
   );

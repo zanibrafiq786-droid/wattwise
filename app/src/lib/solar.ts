@@ -15,6 +15,18 @@ export interface SolarRequest {
   cost_per_kw_rs: number;
   cost_per_kwh_battery_rs: number;
   export_rate_rs_per_unit: number;
+  roof_direction: "south" | "east" | "west" | "north";
+  tilt_deg: number;
+  region: SolarRegion;
+}
+
+// Where the home is, so the AI applies that region's solar rules (what's
+// allowed, approvals, buy-back). `assumed` = GPS wasn't available.
+export interface SolarRegion {
+  country?: string;
+  province?: string;
+  city?: string;
+  assumed?: boolean;
 }
 
 export interface BillProfile {
@@ -25,6 +37,8 @@ export interface BillProfile {
   months_over_200: number;
   avg_rate_rs_per_unit: number;
   confidence: "none" | "low" | "medium" | "high";
+  roof_direction?: "south" | "east" | "west" | "north";
+  tilt_deg?: number;
 }
 
 export interface SolarCandidate {
@@ -46,8 +60,10 @@ export interface SolarCandidate {
 
 export interface SolarRecommendation {
   chosen: { design: string; system_kw: number; battery_kwh: number };
+  headline?: string;
   why: string;
   tradeoffs: string;
+  region_note?: string;
   what_could_change_the_answer: string;
   vendor_checklist: string[];
 }
@@ -55,6 +71,7 @@ export interface SolarRecommendation {
 export interface SolarReport {
   generated_ts: number;
   simulated: boolean;
+  region?: SolarRegion;
   bill_profile: BillProfile;
   user_inputs: SolarRequest;
   candidates: SolarCandidate[];
@@ -62,6 +79,29 @@ export interface SolarReport {
 }
 
 export type SolarStatus = { state: "running" | "done" | "error"; message?: string; ts: number } | null;
+
+// Mirrors brain/solar_sizing.py's bill_profile() + smart_defaults() so the
+// Solar screen can pre-fill its inputs from the user's real bill history
+// instead of showing blank/generic defaults the user doesn't understand
+// (CHATBOT_SOLAR.md feedback). Same Rs/unit sanity bound as the Python side,
+// to skip any corrupted bill-import rows.
+export function computeSmartDefaults(bills: { units: number; amount_rs?: number | null }[]): {
+  daytime_share: number;
+  ac_afternoon: boolean;
+  monthsCount: number;
+} {
+  // Units only -- a solar net-metering bill's rupee amount can be tiny or
+  // negative, but its units are still the real usage.
+  const valid = (bills || []).filter((b) => b.units > 0).slice(-12);
+  if (valid.length === 0) {
+    return { daytime_share: 0.35, ac_afternoon: false, monthsCount: 0 };
+  }
+  const units = valid.map((b) => b.units);
+  const summer = Math.max(...units);
+  const winter = Math.max(Math.min(...units), 1);
+  const acAfternoon = (summer - winter) / winter > 0.4;
+  return { daytime_share: acAfternoon ? 0.45 : 0.35, ac_afternoon: acAfternoon, monthsCount: valid.length };
+}
 
 export function runSolarAnalysis(uid: string, inputs: SolarRequest) {
   const id = `req_${Date.now()}`;

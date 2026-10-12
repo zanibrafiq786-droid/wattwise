@@ -46,3 +46,9 @@ expo-*.log
 # OS
 .DS_Store
 Thumbs.db
+
+# Local design references and recordings -- not part of the app
+Redesign/
+ionhse-bento/
+wattwise-bento/
+inspiration.mp4

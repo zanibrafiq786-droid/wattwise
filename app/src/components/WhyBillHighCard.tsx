@@ -51,7 +51,7 @@ export function WhyBillHighCard({ waste }: { waste: WasteReport }) {
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     wrap: { gap: spacing.sm },
-    title: { color: colors.text, fontSize: 20, fontFamily: fonts.heading },
+    title: { color: colors.text, fontSize: 20, fontFamily: fonts.headingMedium },
     card: {
       backgroundColor: colors.surface,
       borderRadius: 28,

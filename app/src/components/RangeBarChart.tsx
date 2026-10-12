@@ -18,6 +18,9 @@ export function RangeBarChart({ items }: { items: RangeBarItem[] }) {
   const colors = useColors();
   const styles = makeStyles(colors);
   const max = Math.max(1, ...items.map((i) => i.high));
+  // Fixed viewBox units, but rendered at width="100%" -- scales to whatever
+  // width the card actually has instead of a hardcoded pixel width that
+  // could overflow (and force horizontal scrolling) on a narrow phone.
   const barWidth = 240;
   const barHeight = 14;
 
@@ -34,7 +37,7 @@ export function RangeBarChart({ items }: { items: RangeBarItem[] }) {
                 {item.low.toFixed(0)}-{item.high.toFixed(0)} {item.unit}
               </Text>
             </View>
-            <Svg width={barWidth} height={barHeight}>
+            <Svg width="100%" height={barHeight} viewBox={`0 0 ${barWidth} ${barHeight}`}>
               <Rect
                 x={0}
                 y={0}

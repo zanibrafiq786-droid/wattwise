@@ -36,7 +36,7 @@ load_dotenv(BRAIN_DIR / ".env")
 
 # Check https://ai.google.dev/gemini-api/docs/models for the current model
 # name if this stops working.
-MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 EXTRACTION_PROMPT = """This is a photo or scan of a Pakistani electricity (FESCO/DISCO) bill.
 Read it carefully and return ONLY a single JSON object (no markdown fences, no extra text)

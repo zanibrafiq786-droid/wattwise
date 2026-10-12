@@ -1,0 +1,103 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wi-Fi room view</title>
+<!-- Home-screen version of room.html (the user's original stays untouched):
+     same animation, recoloured to the WattWise palette (teal calm waves that
+     turn orange where a person disturbs them, espresso room). The app sends
+     {theme} and the live sensor state via postMessage; the page reports its
+     height back so the WebView can size itself without scrolling.
+     Person drawing: in Live mode the person follows the presence the app
+     sends (lib/smartPresence.ts -- the same decision as the Home pill:
+     empty / sitting / walking).
+     The Empty/Sitting/Walking buttons are a labelled DEMO override that holds
+     until "Live" is tapped -- incoming data never silently overrides it. -->
+<style>
+:root{--fg:#f3ece5;--mut:#a89b8e;--ln:#342c26}
+:root[data-theme="cream"]{--fg:#2b231e;--mut:#8a8074;--ln:#ddd5ca}
+*{box-sizing:border-box}html,body{margin:0;background:transparent}
+body{color:var(--fg);font:14px/1.45 -apple-system,system-ui,sans-serif;padding:0}
+.top{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}.top b{font-size:16px;font-weight:600}
+#bd{font-size:10px;font-weight:700;letter-spacing:.06em;padding:4px 10px;border-radius:99px;background:#f28b4b26;color:#f28b4b}#bd.l{background:#7fc4bd2e;color:#5fb3aa}
+canvas{width:100%;display:block;border-radius:22px}#c{aspect-ratio:1/1;background:#1a1512}#ch{height:64px;margin-top:10px;background:#1a1512;border-radius:16px}
+#st{margin:10px 2px 0;font-weight:600}
+.note{margin:8px 2px 0;color:var(--mut);font-size:12px}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+button{font:600 13px -apple-system,system-ui,sans-serif;border:1px solid var(--ln);background:transparent;color:var(--fg);padding:8px 14px;border-radius:99px}
+button.on{background:#f28b4b;color:#fff;border-color:#f28b4b}
+</style></head><body>
+<div class="top"><b>Wi-Fi motion</b><span id="bd">DEMO</span></div>
+<canvas id="c"></canvas><div id="st"></div>
+<div class="row" id="m"><button data-m="live" class="on">Live</button><button data-m="empty">Empty</button><button data-m="quiet">Sitting</button><button data-m="active">Walking</button></div>
+<canvas id="ch"></canvas>
+<div class="note">The router's Wi-Fi bends around a body, so the signal at the ESP32 wobbles. Position is illustrative: it detects presence, not where you are.</div>
+<script>
+const $=i=>document.getElementById(i),cv=$('c'),x=cv.getContext('2d'),ch=$('ch'),cx=ch.getContext('2d');
+let W,H,R,rt,et,CW,CH,mode='empty',level=.06,pa=0,px=0,py=0,auto=true,live=false,fanA=0,series=[],thr=0.6;
+const app={fan:false,light:false,ac:false,rv:0},TXT={empty:'Room is empty. The signal is steady.',quiet:'Someone is here, sitting. Small ripples in the signal.',active:'Someone is walking. The signal is being disturbed.'};
+// WattWise palette
+const CALM=[127,196,189],HOT=[242,139,75],ROOM='#221c18',ROUTER='#7fc4bd',ESP='#f28b4b',LABEL='#a89b8e';
+function post(o){try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(o))}catch(_){}}
+function fit(){const d=devicePixelRatio||1;let r=cv.getBoundingClientRect();cv.width=r.width*d;cv.height=r.height*d;x.setTransform(d,0,0,d,0,0);W=r.width;H=r.height;
+r=ch.getBoundingClientRect();ch.width=r.width*d;ch.height=r.height*d;cx.setTransform(d,0,0,d,0,0);CW=r.width;CH=r.height;
+R={x:8,y:8,w:W-16,h:H-16};rt={x:R.x+34,y:R.y+34};et={x:R.x+R.w-34,y:R.y+R.h-34};
+post({type:'height',h:Math.ceil(document.documentElement.scrollHeight)})}
+function rr(a,b,c,d,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+c,b,a+c,b+d,r);x.arcTo(a+c,b+d,a,b+d,r);x.arcTo(a,b+d,a,b,r);x.arcTo(a,b,a+c,b,r);x.closePath()}
+function target(t){return mode==='active'?[R.x+R.w*(.5+.24*Math.sin(t*.45)),R.y+R.h*(.56+.14*Math.sin(t*.8+1))]:[R.x+R.w*.66,R.y+R.h*.62]}
+function person(t,a,walk){const col=mode==='active'?'#f28b4b':'#f6a467';x.save();x.translate(px,py);
+x.strokeStyle=col;x.globalAlpha=a*.55*(.6+.4*Math.sin(t*4));x.lineWidth=2;x.beginPath();x.ellipse(0,10,24+4*Math.sin(t*4),9,0,0,7);x.stroke();
+x.globalAlpha=a;x.shadowColor=col;x.shadowBlur=16;x.strokeStyle=col;x.fillStyle=col;x.lineCap='round';const s=Math.sin(t*7)*walk;
+x.lineWidth=7;x.beginPath();x.moveTo(-5,-4);x.lineTo(-5+s*12,11);x.moveTo(5,-4);x.lineTo(5-s*12,11);x.stroke();
+x.lineWidth=5;x.beginPath();x.moveTo(-10,-24);x.lineTo(-13-s*7,-8);x.moveTo(10,-24);x.lineTo(13+s*7,-8);x.stroke();
+x.lineWidth=14;x.beginPath();x.moveTo(0,-26);x.lineTo(0,-8);x.stroke();x.beginPath();x.arc(0,-40,8.5,0,7);x.fill();x.restore()}
+function waves(t){const L=14,sp=40;
+// Real-signal ripple: even when the sensor says "empty" (below its
+// threshold), the waves wobble in proportion to the live rssi_var, so you
+// can see the signal reacting to you -- without drawing a person the sensor
+// didn't actually detect.
+const amb=realLive()?Math.max(0,Math.min(1,app.rv/thr-.5)):0;
+for(let k=0;k<L;k++){const r=((t*52)+k*sp)%(sp*L),fade=1-r/(sp*L);let pv=null;
+for(let a=-.05;a<=1.62;a+=.035){let X=rt.x+r*Math.cos(a),Y=rt.y+r*Math.sin(a),al=fade*.6,m=amb*.35;
+if(amb>.05){const j=amb*4*Math.sin(a*28+t*7+r*.05);X+=j*Math.cos(a);Y+=j*Math.sin(a)}
+if(pa>.02){const dx=X-px,dy=Y-py,d=Math.hypot(dx,dy)||1,inf=Math.exp(-d*d/(2*75*75))*level*pa;m=Math.min(1,inf*1.6);
+const w=Math.sin(t*6+r*.06);X+=dx/d*inf*20*w;Y+=dy/d*inf*20*w+inf*5*Math.sin(a*45+t*9);
+const ap=Math.atan2(py-rt.y,px-rt.x),rp=Math.hypot(px-rt.x,py-rt.y),da=Math.abs(a-ap),hw=Math.atan2(34,rp)*1.4;
+if(r>rp)al*=1-.75*pa*Math.min(1,level+.3)*Math.exp(-2*(da/hw)**2)}
+if(pv){const c=CALM.map((v,i)=>v+(HOT[i]-v)*m|0);x.strokeStyle=`rgba(${c[0]},${c[1]},${c[2]},${al})`;x.beginPath();x.moveTo(pv[0],pv[1]);x.lineTo(X,Y);x.stroke()}pv=[X,Y]}}
+if(pa>.02)for(let j=0;j<3;j++){const q=((t*40)+j*28)%84;x.strokeStyle=`rgba(242,139,75,${(1-q/84)*.45*pa*level})`;x.beginPath();x.arc(px,py,q,0,7);x.stroke()}}
+function room(t){x.clearRect(0,0,W,H);x.save();rr(R.x,R.y,R.w,R.h,18);x.fillStyle=ROOM;x.fill();x.clip();
+x.strokeStyle='rgba(243,236,229,.05)';x.lineWidth=1;for(let i=R.x;i<R.x+R.w;i+=32){x.beginPath();x.moveTo(i,R.y);x.lineTo(i,R.y+R.h);x.stroke()}for(let i=R.y;i<R.y+R.h;i+=32){x.beginPath();x.moveTo(R.x,i);x.lineTo(R.x+R.w,i);x.stroke()}
+x.strokeStyle='rgba(243,236,229,.13)';x.lineWidth=2;rr(R.x+14,R.y+R.h-70,96,50,10);x.stroke();rr(R.x+R.w*.42,R.y+R.h*.42,64,40,8);x.stroke();
+x.setLineDash([4,6]);x.strokeStyle='rgba(127,196,189,.25)';x.beginPath();x.moveTo(rt.x,rt.y);x.lineTo(et.x,et.y);x.stroke();x.setLineDash([]);
+x.lineWidth=1.6;waves(t);
+if(app.light){const g=x.createRadialGradient(R.x+R.w*.5,R.y+34,4,R.x+R.w*.5,R.y+34,90);g.addColorStop(0,'rgba(255,212,138,.45)');g.addColorStop(1,'rgba(255,212,138,0)');x.fillStyle=g;x.fillRect(R.x,R.y,R.w,200)}
+x.fillStyle=app.light?'#ffd48a':'#5a4f46';x.beginPath();x.arc(R.x+R.w*.5,R.y+34,8,0,7);x.fill();
+x.strokeStyle=app.ac?ROUTER:'#5a4f46';x.lineWidth=2;rr(R.x+R.w*.6,R.y+8,78,18,6);x.stroke();if(app.ac){x.strokeStyle='rgba(127,196,189,.35)';for(let i=0;i<4;i++){x.beginPath();x.moveTo(R.x+R.w*.6+10+i*17,R.y+30);x.lineTo(R.x+R.w*.6+4+i*17,R.y+30+22+6*Math.sin(t*3+i));x.stroke()}}
+fanA+=app.fan?.3:0;x.save();x.translate(R.x+R.w-46,R.y+R.h*.22);x.strokeStyle=app.fan?'#f6a467':'#5a4f46';x.fillStyle=x.strokeStyle;x.lineWidth=2;x.beginPath();x.arc(0,0,17,0,7);x.stroke();for(let i=0;i<3;i++){x.rotate(fanA+i*2.094);x.beginPath();x.ellipse(8,0,8,3.5,0,0,7);x.fill();x.rotate(-(fanA+i*2.094))}x.restore();
+x.fillStyle=ROUTER;rr(rt.x-14,rt.y-5,28,12,4);x.fill();x.strokeStyle=ROUTER;x.lineWidth=2;x.beginPath();x.moveTo(rt.x-8,rt.y-5);x.lineTo(rt.x-12,rt.y-16);x.moveTo(rt.x+8,rt.y-5);x.lineTo(rt.x+12,rt.y-16);x.stroke();
+x.fillStyle=ESP;rr(et.x-10,et.y-10,20,20,4);x.fill();x.fillStyle=LABEL;x.font='11px system-ui';x.textAlign='center';x.fillText('Router',rt.x,rt.y+22);x.fillText('ESP32',et.x,et.y+24);
+if(pa>.02){x.globalAlpha=pa;person(t,1,mode==='active'?1:0);x.globalAlpha=1}x.restore();x.strokeStyle='rgba(243,236,229,.1)';x.lineWidth=2;rr(R.x,R.y,R.w,R.h,18);x.stroke()}
+function chart(){cx.clearRect(0,0,CW,CH);const top=Math.max(thr*2,...series,.01),th=CH-Math.min(thr,top)/top*(CH-8)-4;
+cx.strokeStyle='rgba(242,139,75,.65)';cx.setLineDash([4,4]);cx.beginPath();cx.moveTo(0,th);cx.lineTo(CW,th);cx.stroke();cx.setLineDash([]);
+cx.strokeStyle='#7fc4bd';cx.lineWidth=2;cx.beginPath();series.forEach((v,i)=>{const X=i*CW/59,Y=CH-Math.min(v,top)/top*(CH-8)-4;i?cx.lineTo(X,Y):cx.moveTo(X,Y)});cx.stroke();
+cx.fillStyle=LABEL;cx.font='10px system-ui';cx.textAlign='left';cx.fillText('RSSI variance, last ~20 s · dashed = threshold',8,13)}
+let t0=performance.now(),ai=0,al=performance.now();
+function loop(n){const t=(n-t0)/1000;if(auto&&n-al>6000){al=n;ai=(ai+1)%4;setMode(['empty','active','quiet','empty'][ai])}
+const base={empty:.06,quiet:.4,active:.95}[mode];level+=((realLive()?Math.max(base*.5,Math.min(1,app.rv/(thr*3.3))):base)-level)*.06;pa+=((mode==='empty'?0:1)-pa)*.05;
+const[tx,ty]=target(t);if(!px){px=tx;py=ty}px+=(tx-px)*.04;py+=(ty-py)*.04;room(t);chart();requestAnimationFrame(loop)}
+let demo=null,fw='empty';// demo: null = Live, else the demo mode the user picked; fw: last firmware presence
+function realLive(){return live&&!demo}
+function setMode(m,txt){mode=m;$('st').textContent=txt||TXT[m]}
+function badge(){const e=$('bd'),on=realLive();e.textContent=on?'LIVE':'DEMO';e.classList.toggle('l',on)}
+// Live mode: the app has already decided presence (lib/smartPresence.ts,
+// same decision as the Home pill) and sends it as d.presence.
+function applyLive(){if(!realLive())return;setMode(fw==='active'?'active':fw==='quiet'?'quiet':'empty')}
+setInterval(()=>{const v=realLive()?app.rv:{empty:.3+Math.random()*.4,quiet:1+Math.random()*.8,active:3+Math.random()*2.5}[mode];series.push(v);if(series.length>60)series.shift()},350);
+document.querySelectorAll('#m [data-m]').forEach(b=>b.onclick=()=>{const m=b.dataset.m;demo=m==='live'?null:m;
+document.querySelectorAll('#m [data-m]').forEach(z=>z.classList.toggle('on',z===b));
+if(demo){auto=false;setMode(demo)}else if(live){auto=false;applyLive()}else auto=true;badge()});
+function onMsg(e){try{const d=typeof e.data==='string'?JSON.parse(e.data):e.data;if(!d)return;
+if(d.theme){document.documentElement.setAttribute('data-theme',d.theme)}
+if(d.threshold>0)thr=+d.threshold;
+if(!d.presence)return;live=true;app.rv=+d.rssi_var||0;app.fan=!!d.fan_on;app.light=!!d.light_on;app.ac=!!d.ac_on;fw=d.presence;
+if(!demo){auto=false;applyLive()}badge()}catch(_){}}
+addEventListener('message',onMsg);document.addEventListener('message',onMsg);addEventListener('resize',fit);
+fit();setMode('empty');requestAnimationFrame(loop);
+</script></body></html>

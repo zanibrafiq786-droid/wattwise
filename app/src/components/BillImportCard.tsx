@@ -1,64 +1,55 @@
 import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { ExtractedBill, extractBillFromImage, saveExtractedBill, validateExtractedBill } from "../lib/billImport";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { SaveResult, scanBill } from "../lib/billImport";
+import { billAmountLabel } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
-import { Colors, spacing } from "../lib/theme";
+import { monthName } from "../lib/months";
+import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
-import { Button } from "./Button";
 import { Card } from "./Card";
+import { Icon } from "./Icon";
 
-type Status = "idle" | "loading" | "review" | "error" | "done";
+type Status = "idle" | "loading" | "error" | "done";
 
+// Camera/gallery -> AI reads the bill -> saved straight away (no review
+// step). Only rows that look like real bills are saved; anything the scan
+// got wrong is skipped and listed in plain words.
 export function BillImportCard() {
   const { t } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
   const [status, setStatus] = useState<Status>("idle");
-  const [extracted, setExtracted] = useState<ExtractedBill | null>(null);
-  const [warnings, setWarnings] = useState<string[]>([]);
+  const [result, setResult] = useState<SaveResult | null>(null);
   const [errorMsg, setErrorMsg] = useState("");
-  const [savedMonths, setSavedMonths] = useState<string[]>([]);
 
-  async function pickAndExtract(source: "camera" | "library") {
+  async function scan(source: "camera" | "library") {
     try {
       const permission =
         source === "camera"
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        setErrorMsg("Permission denied. Allow camera/photos access to import a bill.");
+        setErrorMsg(t("importPermission"));
         setStatus("error");
         return;
       }
-
-      const result =
+      const picked =
         source === "camera"
-          ? await ImagePicker.launchCameraAsync({ base64: true, quality: 0.6 })
-          : await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.6 });
-
-      const base64 = result.canceled ? null : result.assets?.[0]?.base64;
+          ? await ImagePicker.launchCameraAsync({ base64: true, quality: 0.5 })
+          : await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.5 });
+      const base64 = picked.canceled ? null : picked.assets?.[0]?.base64;
       if (!base64) return;
 
       setStatus("loading");
-      const mimeType = result.assets![0].mimeType || "image/jpeg";
-      const bill = await extractBillFromImage(base64, mimeType);
-      setExtracted(bill);
-      setWarnings(validateExtractedBill(bill));
-      setStatus("review");
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : String(err));
-      setStatus("error");
-    }
-  }
-
-  async function confirmSave() {
-    if (!extracted) return;
-    setStatus("loading");
-    try {
-      const months = await saveExtractedBill(extracted);
-      setSavedMonths(months);
-      setStatus("done");
+      const saved = await scanBill(base64, picked.assets![0].mimeType || "image/jpeg");
+      setResult(saved);
+      if (saved.saved.length === 0) {
+        setErrorMsg(t("importNothingReadable"));
+        setStatus("error");
+      } else {
+        setStatus("done");
+      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : String(err));
       setStatus("error");
@@ -67,78 +58,71 @@ export function BillImportCard() {
 
   function reset() {
     setStatus("idle");
-    setExtracted(null);
-    setWarnings([]);
+    setResult(null);
     setErrorMsg("");
-    setSavedMonths([]);
   }
+
+  if (status === "idle") {
+    return (
+      <Card style={styles.compact}>
+        <Icon name="camera" size={18} color={colors.primary} />
+        <Text style={styles.compactTitle} numberOfLines={1}>
+          {t("importBill")}
+        </Text>
+        <Pressable style={[styles.chip, styles.chipPrimary]} onPress={() => scan("camera")}>
+          <Text style={[styles.chipText, { color: "#FFFFFF" }]}>{t("camera")}</Text>
+        </Pressable>
+        <Pressable style={styles.chip} onPress={() => scan("library")}>
+          <Text style={styles.chipText}>{t("gallery")}</Text>
+        </Pressable>
+      </Card>
+    );
+  }
+
+  if (status === "loading") {
+    return (
+      <Card style={styles.compact}>
+        <ActivityIndicator color={colors.primary} />
+        <Text style={styles.compactTitle}>{t("importReading")}</Text>
+      </Card>
+    );
+  }
+
+  const main = result?.saved[0];
+  const historyCount = result ? result.saved.length - 1 : 0;
 
   return (
     <Card style={styles.card}>
-      <Text style={styles.title}>{t("importBillTitle")}</Text>
-
-      {status === "idle" && (
+      {status === "done" && main && (
         <>
-          <Text style={styles.subtle}>
-            Take a photo or pick one from your gallery. AI reads the current bill and any
-            12-month history table printed on it.
-          </Text>
-          <View style={styles.row}>
-            <Button label={t("camera")} icon="camera" onPress={() => pickAndExtract("camera")} />
-            <Button label={t("gallery")} variant="secondary" onPress={() => pickAndExtract("library")} />
+          <View style={styles.doneRow}>
+            <Icon name="check" size={18} color={colors.success} />
+            <Text style={styles.doneTitle}>{t("importSaved")}</Text>
           </View>
+          <Text style={styles.mainLine}>
+            {monthName(main.month)}: {Math.round(main.units)} units · {billAmountLabel(main)}
+          </Text>
+          {historyCount > 0 && (
+            <Text style={styles.subtle}>{t("importHistorySaved", { n: String(historyCount) })}</Text>
+          )}
         </>
       )}
+      {status === "error" && <Text style={styles.errorText}>{errorMsg}</Text>}
 
-      {status === "loading" && (
-        <View style={styles.center}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={styles.subtle}>Reading the bill...</Text>
+      {result && result.skipped.length > 0 && (
+        <View style={styles.skipBox}>
+          <Text style={styles.skipTitle}>{t("importSkipped", { n: String(result.skipped.length) })}</Text>
+          {result.skipped.slice(0, 4).map((s, i) => (
+            <Text key={i} style={styles.skipText}>
+              • {s.month === "?" ? "?" : monthName(s.month)}: {s.reason}
+            </Text>
+          ))}
         </View>
       )}
 
-      {status === "review" && extracted && (
-        <>
-          <Text style={styles.subtle}>
-            Billing month: {extracted.billing_month ?? "?"} -- {extracted.units ?? "?"} units, Rs{" "}
-            {extracted.amount_rs ?? "?"}
-          </Text>
-          {extracted.history_12m?.length > 0 && (
-            <Text style={styles.subtle}>
-              Found {extracted.history_12m.length} month(s) of history to import too.
-            </Text>
-          )}
-          {warnings.length > 0 && (
-            <View style={styles.warnBox}>
-              {warnings.map((w, i) => (
-                <Text key={i} style={styles.warnText}>
-                  - {w}
-                </Text>
-              ))}
-            </View>
-          )}
-          <View style={styles.row}>
-            <Button label={t("saveToFirebase")} icon="check" onPress={confirmSave} />
-            <Button label={t("cancel")} variant="secondary" onPress={reset} />
-          </View>
-        </>
-      )}
-
-      {status === "done" && (
-        <>
-          <Text style={styles.successText}>
-            Saved {savedMonths.length} month(s): {savedMonths.sort().join(", ")}
-          </Text>
-          <Button label={t("importAnother")} variant="secondary" onPress={reset} />
-        </>
-      )}
-
-      {status === "error" && (
-        <>
-          <Text style={styles.errorText}>{errorMsg}</Text>
-          <Button label={t("tryAgain")} variant="secondary" onPress={reset} />
-        </>
-      )}
+      <Pressable style={styles.chip} onPress={reset}>
+        <Text style={styles.chipText}>{status === "done" ? t("importAnother") : t("tryAgain")}</Text>
+      </Pressable>
     </Card>
   );
 }
@@ -146,13 +130,25 @@ export function BillImportCard() {
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     card: { gap: spacing.sm },
-    title: { color: colors.text, fontSize: 16, fontWeight: "700" },
-    subtle: { color: colors.textMuted, fontSize: 13, lineHeight: 18 },
-    row: { flexDirection: "row", gap: spacing.sm },
-    center: { alignItems: "center", gap: spacing.sm, paddingVertical: spacing.md },
-    warnBox: { gap: 2 },
-    warnText: { color: colors.warning, fontSize: 12 },
-    successText: { color: colors.success, fontSize: 14, fontWeight: "600" },
+    compact: { flexDirection: "row", alignItems: "center", gap: spacing.sm, paddingVertical: spacing.sm + 2 },
+    compactTitle: { flex: 1, color: colors.text, fontSize: 15, fontFamily: fonts.bodySemiBold },
+    chip: {
+      alignSelf: "flex-start",
+      paddingVertical: 7,
+      paddingHorizontal: 14,
+      borderRadius: 999,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+    },
+    chipPrimary: { backgroundColor: colors.primary, borderColor: colors.primary },
+    chipText: { color: colors.text, fontSize: 13, fontFamily: fonts.bodySemiBold },
+    doneRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs },
+    doneTitle: { color: colors.success, fontSize: 15, fontFamily: fonts.bodySemiBold },
+    mainLine: { color: colors.text, fontSize: 16, fontFamily: fonts.headingMedium },
+    subtle: { color: colors.textMuted, fontSize: 13 },
     errorText: { color: colors.danger, fontSize: 13 },
+    skipBox: { backgroundColor: colors.warning + "1f", borderRadius: 14, padding: spacing.sm, gap: 2 },
+    skipTitle: { color: colors.warning, fontSize: 12, fontFamily: fonts.bodySemiBold },
+    skipText: { color: colors.warning, fontSize: 12 },
   });
 }

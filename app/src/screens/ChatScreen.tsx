@@ -5,22 +5,34 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
-import { Icon } from "../components/Icon";
+import { Icon, IconName } from "../components/Icon";
+import { Sparkle } from "../components/Sparkle";
 import { TextField } from "../components/TextField";
 import { useAuth } from "../lib/authContext";
 import { ChatMessage, clearChat, sendChatMessage, useChatMessages, usePendingTimeout } from "../lib/chat";
-import { useI18n } from "../lib/i18n";
+import { TranslationKey, useI18n } from "../lib/i18n";
 import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 
+// Welcome-screen starters. Each one is answerable from the data the chat
+// worker actually gives the model (bills, slab status, 7-day waste,
+// forecast -- see brain/chat_context.py), so none leads to a "no data" reply.
+const STARTERS: { key: TranslationKey; icon: IconName }[] = [
+  { key: "chatQ1", icon: "chart" },
+  { key: "chatQ2", icon: "door" },
+  { key: "chatQ3", icon: "bolt" },
+  { key: "chatQ4", icon: "check" },
+];
+
 export function ChatScreen() {
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const { t, language } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
@@ -31,19 +43,10 @@ export function ChatScreen() {
   const [input, setInput] = useState("");
   const listRef = useRef<FlatList>(null);
 
-  const defaultQuestions = [t("chatSuggestion1"), t("chatSuggestion2"), t("chatSuggestion3")];
-  const lastMessage = messages[messages.length - 1];
-  const waitingForReply = lastMessage?.role === "user";
-  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
-  // Starter questions show before the first message; once a question is
-  // sent they disappear until the reply brings its own follow-ups, instead
-  // of staying on screen (and being tappable) while a reply is pending.
-  const questions =
-    messages.length === 0
-      ? defaultQuestions
-      : !waitingForReply && lastAssistant?.suggestions?.length
-        ? lastAssistant.suggestions
-        : [];
+  const firstName = displayName?.split(" ")[0] || user?.email?.split("@")[0] || "";
+  // Suggested questions appear only on the welcome screen (the four starter
+  // cards). Once the conversation starts there are no follow-up chips --
+  // by request, the chat stays just questions and answers.
 
   function handleSend(text?: string) {
     const toSend = (text ?? input).trim();
@@ -57,7 +60,10 @@ export function ChatScreen() {
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <View style={styles.topRow}>
-          <Text style={styles.title}>{t("chatTitle")}</Text>
+          <View style={styles.titleRow}>
+            <Sparkle size={20} id="chatTitleSparkle" />
+            <Text style={styles.title}>{t("chatTitle")}</Text>
+          </View>
           <View style={styles.topRowRight}>
             <Pressable onPress={() => uid && clearChat(uid)}>
               <Text style={styles.clearLink}>{t("chatClear")}</Text>
@@ -69,9 +75,28 @@ export function ChatScreen() {
         </View>
 
         {messages.length === 0 ? (
-          <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>{t("chatEmpty")}</Text>
-          </View>
+          <ScrollView contentContainerStyle={styles.welcome}>
+            <View style={styles.orb}>
+              <Sparkle size={44} id="chatWelcomeSparkle" />
+            </View>
+            <Text style={styles.greeting}>{t("chatGreeting", { name: firstName })}</Text>
+            <Text style={styles.headline}>
+              {t("chatHeadlineA")} <Text style={styles.headlineBold}>{t("chatHeadlineB")}</Text>
+              {t("chatHeadlineC")}
+            </Text>
+            <View style={styles.starters}>
+              {STARTERS.map((s) => (
+                <Pressable
+                  key={s.key}
+                  onPress={() => handleSend(t(s.key))}
+                  style={({ pressed }) => [styles.starter, pressed && styles.starterPressed]}
+                >
+                  <Icon name={s.icon} size={20} color={colors.primary} />
+                  <Text style={styles.starterText}>{t(s.key)}</Text>
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
         ) : (
           <FlatList
             ref={listRef}
@@ -92,23 +117,6 @@ export function ChatScreen() {
           <View style={styles.offlineRow}>
             <Text style={styles.offlineText}>{t("chatOffline")}</Text>
           </View>
-        )}
-
-        {questions.length > 0 && (
-        <View style={styles.questionsList}>
-          {questions.slice(0, 3).map((q) => (
-            <Pressable
-              key={q}
-              onPress={() => handleSend(q)}
-              hitSlop={6}
-              style={({ pressed }) => [styles.questionPill, pressed && styles.questionPillPressed]}
-            >
-              <Text style={styles.questionText} numberOfLines={2}>
-                {q}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
         )}
 
         <View style={styles.inputRow}>
@@ -147,10 +155,44 @@ function makeStyles(colors: Colors) {
     },
     topRowRight: { flexDirection: "row", alignItems: "center", gap: spacing.md },
     closeButton: { padding: spacing.xs },
-    title: { color: colors.text, fontSize: 22, fontFamily: fonts.heading },
+    titleRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, flexShrink: 1 },
+    title: { color: colors.text, fontSize: 22, fontFamily: fonts.headingMedium },
     clearLink: { color: colors.textMuted, fontSize: 13 },
-    emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg },
-    emptyText: { color: colors.textMuted, fontSize: 14, textAlign: "center" },
+    welcome: { flexGrow: 1, justifyContent: "center", padding: spacing.md, gap: spacing.sm },
+    orb: {
+      alignSelf: "center",
+      width: 84,
+      height: 84,
+      borderRadius: 42,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: spacing.sm,
+    },
+    greeting: { color: colors.textMuted, fontSize: 13, textAlign: "center" },
+    headline: {
+      color: colors.text,
+      fontSize: 30,
+      lineHeight: 36,
+      fontFamily: fonts.heading,
+      textAlign: "center",
+      marginBottom: spacing.md,
+    },
+    headlineBold: { fontFamily: fonts.headingMedium },
+    starters: { gap: spacing.sm },
+    starter: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+      backgroundColor: colors.surface,
+      borderRadius: 22,
+      paddingVertical: spacing.md + 2,
+      paddingHorizontal: spacing.md + 2,
+    },
+    starterPressed: { backgroundColor: colors.surfaceAlt },
+    starterText: { color: colors.text, fontSize: 15, fontFamily: fonts.bodyMedium, flex: 1 },
     list: { padding: spacing.md, gap: spacing.sm },
     bubbleRow: { flexDirection: "row" },
     bubbleRowUser: { justifyContent: "flex-end" },
@@ -169,21 +211,6 @@ function makeStyles(colors: Colors) {
       backgroundColor: colors.danger + "22",
     },
     offlineText: { color: colors.danger, fontSize: 12 },
-    // Each question is its own pill with real spacing between them, so a
-    // tap can't land on the wrong one.
-    questionsList: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
-    questionPill: {
-      alignSelf: "flex-start",
-      maxWidth: "90%",
-      backgroundColor: colors.surfaceAlt,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 999,
-      paddingVertical: spacing.sm,
-      paddingHorizontal: spacing.md,
-    },
-    questionPillPressed: { backgroundColor: colors.border },
-    questionText: { color: colors.text, fontSize: 14 },
     inputRow: {
       flexDirection: "row",
       alignItems: "flex-end",

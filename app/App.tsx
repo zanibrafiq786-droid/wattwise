@@ -6,7 +6,9 @@ import { ActivityIndicator, Text, TextInput, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthNavigator } from "./src/screens/auth/AuthNavigator";
 import { RootNavigator as AppRootNavigator } from "./src/screens/RootNavigator";
+import { ErrorBoundary } from "./src/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "./src/lib/authContext";
+import { DataSourceProvider } from "./src/lib/dataSourceContext";
 import { I18nProvider } from "./src/lib/i18n";
 import { colors, fonts } from "./src/lib/theme";
 import { ThemeProvider, useThemeMode } from "./src/lib/themeContext";
@@ -96,14 +98,18 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <ThemeProvider>
-        <I18nProvider>
-          <AuthProvider>
-            <ThemedNavigation />
-          </AuthProvider>
-        </I18nProvider>
-      </ThemeProvider>
-    </SafeAreaProvider>
+    <ErrorBoundary>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <I18nProvider>
+            <AuthProvider>
+              <DataSourceProvider>
+                <ThemedNavigation />
+              </DataSourceProvider>
+            </AuthProvider>
+          </I18nProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }

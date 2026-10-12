@@ -3,11 +3,15 @@ import React, { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Avatar } from "../components/Avatar";
+import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
 import { Icon } from "../components/Icon";
+import { Segmented } from "../components/Segmented";
+import { StatusMessage } from "../components/StatusMessage";
 import { TextField } from "../components/TextField";
 import { useAuth } from "../lib/authContext";
+import { useDataSource } from "../lib/dataSourceContext";
 import { useI18n } from "../lib/i18n";
 import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
@@ -15,17 +19,25 @@ import { RootStackParamList } from "./RootNavigator";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Account">;
 
+// Profile (tap the avatar): your details, app language, and the data
+// source for the Report -- with a plain explanation of what "simulated"
+// is for, since it's easy to misread as fake data replacing yours.
 export function AccountScreen({ navigation }: Props) {
   const { user, displayName, signOut, updateName } = useAuth();
-  const { t } = useI18n();
+  const { t, language, setLanguage } = useI18n();
+  const { source, setSource } = useDataSource();
   const colors = useColors();
   const styles = makeStyles(colors);
   const [name, setName] = useState(displayName ?? "");
-  const [savedMsg, setSavedMsg] = useState("");
+  const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
   async function handleSave() {
-    await updateName(name.trim());
-    setSavedMsg(t("detailsSaved"));
+    try {
+      await updateName(name.trim());
+      setStatus({ type: "success", message: t("detailsSaved") });
+    } catch (err) {
+      setStatus({ type: "error", message: err instanceof Error ? err.message : t("saveFailed") });
+    }
   }
 
   return (
@@ -35,24 +47,52 @@ export function AccountScreen({ navigation }: Props) {
         <View style={{ flex: 1 }} />
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>{t("account")}</Text>
+        <Text style={styles.title}>{t("profile")}</Text>
 
         <Card style={styles.profCard}>
-          <Avatar name={displayName} email={user?.email} size={88} onPress={() => {}} />
+          <Avatar name={displayName} email={user?.email} size={72} />
           <View style={styles.grow}>
             <Text style={styles.name}>{displayName || user?.email}</Text>
             <Text style={styles.email}>{user?.email}</Text>
           </View>
         </Card>
 
-        <View style={styles.sectionHead}>
-          <Icon name="sliders" size={16} color={colors.textMuted} />
-          <Text style={styles.sectionTitle}>{t("yourDetails")}</Text>
-        </View>
+        <Section icon="sliders" title={t("yourDetails")} colors={colors} />
         <Card style={styles.card}>
           <TextField label={t("fullName")} value={name} onChangeText={setName} autoCapitalize="words" />
-          {savedMsg ? <Text style={styles.saved}>{savedMsg}</Text> : null}
+          <StatusMessage type={status?.type ?? "success"} message={status?.message ?? null} />
           <Button label={t("saveDetails")} onPress={handleSave} />
+        </Card>
+
+        <Section icon="chip" title={t("language")} colors={colors} />
+        <Card style={styles.card}>
+          <Segmented
+            options={[
+              { key: "en", label: "English" },
+              { key: "ur", label: "اردو" },
+            ]}
+            value={language}
+            onChange={setLanguage}
+          />
+        </Card>
+
+        <Section icon="chart" title={t("dataSource")} colors={colors} />
+        <Card style={styles.card}>
+          <Segmented
+            options={[
+              { key: "real", label: t("dataSourceReal") },
+              { key: "simulated", label: t("dataSourceSimulated") },
+            ]}
+            value={source}
+            onChange={setSource}
+          />
+          {source === "simulated" && <Badge label="SIMULATED" color={colors.warning} />}
+          <View style={styles.explain}>
+            <Text style={styles.explainTitle}>{t("dataSourceWhatTitle")}</Text>
+            <Text style={styles.explainText}>• {t("dataSourceWhy1")}</Text>
+            <Text style={styles.explainText}>• {t("dataSourceWhy2")}</Text>
+            <Text style={styles.explainText}>• {t("dataSourceWhy3")}</Text>
+          </View>
         </Card>
 
         <Button label={t("signOut")} variant="danger" icon="logout" onPress={() => signOut()} />
@@ -61,19 +101,31 @@ export function AccountScreen({ navigation }: Props) {
   );
 }
 
+function Section({ icon, title, colors }: { icon: "sliders" | "chip" | "chart"; title: string; colors: Colors }) {
+  const styles = makeStyles(colors);
+  return (
+    <View style={styles.sectionHead}>
+      <Icon name={icon} size={16} color={colors.textMuted} />
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg },
     topBar: { flexDirection: "row", alignItems: "center", paddingHorizontal: spacing.md, paddingTop: spacing.xs },
-    content: { padding: spacing.md, gap: spacing.md },
-    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
+    content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xl },
+    title: { color: colors.text, fontSize: 34, fontFamily: fonts.headingMedium },
     profCard: { flexDirection: "row", alignItems: "center", gap: spacing.md },
     grow: { flex: 1, gap: 2 },
     name: { color: colors.text, fontSize: 20, fontFamily: fonts.headingMedium },
     email: { color: colors.textMuted, fontSize: 13 },
     sectionHead: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginTop: spacing.xs },
-    sectionTitle: { color: colors.textMuted, fontSize: 13, fontFamily: fonts.bodySemiBold },
+    sectionTitle: { color: colors.text, fontSize: 15, fontFamily: fonts.headingMedium },
     card: { gap: spacing.sm },
-    saved: { color: colors.success, fontSize: 13 },
+    explain: { backgroundColor: colors.surfaceAlt, borderRadius: 14, padding: spacing.md, gap: 4 },
+    explainTitle: { color: colors.text, fontSize: 13, fontFamily: fonts.bodySemiBold, marginBottom: 2 },
+    explainText: { color: colors.textMuted, fontSize: 12, lineHeight: 18 },
   });
 }

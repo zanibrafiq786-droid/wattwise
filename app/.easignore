@@ -1,0 +1,18 @@
+# What EAS must never upload when building (used instead of .gitignore
+# when building with EAS_NO_VCS=1). The Firebase web config comes from
+# eas.json "env"; there is no AI key in the app at all.
+.env
+*.env
+.eas-token.env
+*.log
+metro.log
+node_modules/
+.expo/
+dist/
+web-build/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+.DS_Store

@@ -25,16 +25,18 @@ def bill_profile(bills: list) -> dict:
             "confidence": "none",
         }
 
-    # Guard against bad entries (e.g. a bill-photo import misreading a
-    # history graph) rather than letting one bad month wreck the average.
-    # Pakistani residential rates run roughly Rs 5-150/unit across the
-    # slabs -- anything outside that is almost certainly a misread, not a
-    # real tariff, so it's excluded rather than silently averaged in.
-    def _valid(b):
-        u, a = b.get("units", 0), b.get("amount_rs", 0)
-        return u > 0 and a > 0 and 5 <= (a / u) <= 150
+    # Usage comes from every month with units. The rupee rate only comes
+    # from "normal" bills (Rs 5-150/unit): a solar net-metering home's bill
+    # can be tiny or a negative credit -- real, but it says nothing about
+    # the tariff, so it mustn't drag the average rate down.
+    def _has_units(b):
+        return (b.get("units") or 0) > 0
 
-    last12 = [b for b in bills[-12:] if _valid(b)]
+    def _normal_rate(b):
+        u, a = b.get("units") or 0, b.get("amount_rs")
+        return u > 0 and a is not None and a > 0 and 5 <= (a / u) <= 150
+
+    last12 = [b for b in bills if _has_units(b)][-12:]
     if not last12:
         return {
             "months_count": 0,
@@ -46,7 +48,8 @@ def bill_profile(bills: list) -> dict:
             "confidence": "none",
         }
     units = [b["units"] for b in last12]
-    rates = [b["amount_rs"] / b["units"] for b in last12]
+    rates = [b["amount_rs"] / b["units"] for b in bills if _normal_rate(b)][-12:]
+    solar_credit_months = sum(1 for b in last12 if not _normal_rate(b) and b.get("amount_rs") is not None)
 
     months_count = len(last12)
     # Scale to a full year if we have fewer than 12 months -- never silently
@@ -61,6 +64,9 @@ def bill_profile(bills: list) -> dict:
         "winter_low_units": round(min(units), 0),
         "months_over_200": sum(1 for u in units if u > 200),
         "avg_rate_rs_per_unit": round(sum(rates) / len(rates), 2) if rates else 33.0,
+        # Months whose bill was tiny/negative: a strong sign the home ALREADY
+        # has solar with net-metering -- the advice must take that into account.
+        "months_with_solar_credit": solar_credit_months,
         "confidence": "high" if months_count >= 12 else ("medium" if months_count >= 6 else "low"),
     }
 
@@ -104,6 +110,29 @@ def candidate_system_sizes(annual_kwh: float, ghi_series: list, pr: float = 0.75
         kw = annual_kwh * offset / yield_per_kw
         sizes.append({"target_offset_pct": round(offset * 100), "system_kw": round(kw, 1)})
     return sizes
+
+
+def smart_defaults(profile: dict) -> dict:
+    """B1's inputs are technical to a non-technical user (CHATBOT_SOLAR.md
+    feedback: pre-fill them from the real bill profile instead of making the
+    user guess). Only daytime_share / ac_afternoon can be inferred from bill
+    seasonality; outage hours and Rs/kW cost assumptions can't be read from
+    a bill, so they stay as typical-for-Pakistan defaults the user can edit."""
+    summer = profile.get("summer_peak_units", 0)
+    winter = max(profile.get("winter_low_units", 0), 1)
+    # A big summer-vs-winter swing usually means a cooling appliance (AC)
+    # drives afternoon usage -- a rough but honest signal, not a guess pulled
+    # from nowhere.
+    ac_afternoon = profile.get("months_count", 0) > 0 and (summer - winter) / winter > 0.4
+    return {
+        "daytime_share": 0.45 if ac_afternoon else 0.35,
+        "ac_afternoon": ac_afternoon,
+        "outage_hours_per_day": 2,
+        "outage_start_hour": 18,
+        "cost_per_kw_rs": 160000,
+        "cost_per_kwh_battery_rs": 55000,
+        "export_rate_rs_per_unit": 0,
+    }
 
 
 def outage_hour_set(hours_per_day: int, start_hour: int) -> set:

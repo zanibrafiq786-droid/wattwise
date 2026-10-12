@@ -40,7 +40,9 @@ export interface Alert {
 
 export interface Bill {
   units: number;
-  amount_rs: number;
+  // As printed on the bill. Can be small or NEGATIVE (a credit) for homes
+  // with solar net-metering; missing when the scan couldn't read it.
+  amount_rs?: number | null;
 }
 
 export interface BillEntry extends Bill {
@@ -53,13 +55,24 @@ export interface ApplianceWatts {
   ac: number;
 }
 
+// A household appliance the user adds themselves (whole house, not just
+// the sensed room) -- used to estimate daily usage for the solar advice.
+export interface HouseAppliance {
+  id: string;
+  name: string;
+  watts: number;
+  hours_per_day: number;
+  quantity: number;
+}
+
 export interface AppConfig {
   watts: ApplianceWatts;
   rate_rs_per_unit: number;
   empty_minutes_threshold: number;
-  // Calibrated RSSI-variance threshold from brain/calibrate.py, if it's been
-  // run. Falls back to a rough default when absent -- see useConfig().
+  // The app's presence threshold on rssi_var (lib/smartPresence.ts), set by
+  // the in-app Wi-Fi calibration. Falls back to a default -- see useConfig().
   rssi_threshold?: number;
+  appliances?: HouseAppliance[];
 }
 
 export interface AcLogEntry {

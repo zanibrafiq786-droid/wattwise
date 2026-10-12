@@ -40,6 +40,7 @@ const translations = {
     tabAlerts: "Alerts",
     tabReport: "Report",
     tabSetup: "Setup",
+    tabChat: "Chat",
     account: "Account",
     yourDetails: "Your details",
     saveDetails: "Save details",
@@ -106,6 +107,19 @@ const translations = {
     acWatts: "AC (W)",
     rateRsPerUnit: "Rate (Rs per unit)",
     saveSettings: "Save settings",
+
+    // Chat screen
+    chatTitle: "Ask about your bill",
+    chatPlaceholder: "Ask a question...",
+    chatSend: "Send",
+    chatClear: "Clear chat",
+    chatOffline: "Assistant is offline -- start the brain on the laptop (python chat_worker.py).",
+    chatThinking: "Thinking...",
+    chatEmpty: "Ask anything about your bill, usage, or what's wasting electricity.",
+    chatSuggestion1: "Why is my bill high this month?",
+    chatSuggestion2: "How far am I from 200 units?",
+    chatSuggestion3: "Which habit wastes the most?",
+    chatSuggestion4: "What will next month's bill be?",
   },
   ur: {
     appName: "WattWise",
@@ -136,6 +150,7 @@ const translations = {
     tabAlerts: "الرٹس",
     tabReport: "رپورٹ",
     tabSetup: "سیٹ اپ",
+    tabChat: "چیٹ",
     account: "اکاؤنٹ",
     yourDetails: "آپ کی تفصیلات",
     saveDetails: "تفصیلات محفوظ کریں",
@@ -202,6 +217,19 @@ const translations = {
     acWatts: "اے سی (واٹ)",
     rateRsPerUnit: "ریٹ (روپے فی یونٹ)",
     saveSettings: "ترتیبات محفوظ کریں",
+
+    // Chat screen
+    chatTitle: "اپنے بل کے بارے میں پوچھیں",
+    chatPlaceholder: "سوال لکھیں...",
+    chatSend: "بھیجیں",
+    chatClear: "چیٹ صاف کریں",
+    chatOffline: "اسسٹنٹ آف لائن ہے -- لیپ ٹاپ پر برین چلائیں (python chat_worker.py)۔",
+    chatThinking: "سوچ رہا ہے...",
+    chatEmpty: "اپنے بل، استعمال، یا بجلی کے ضیاع کے بارے میں کچھ بھی پوچھیں۔",
+    chatSuggestion1: "اس مہینے بل زیادہ کیوں ہے؟",
+    chatSuggestion2: "200 یونٹس سے میں کتنا دور ہوں؟",
+    chatSuggestion3: "کون سی عادت سب سے زیادہ ضائع کرتی ہے؟",
+    chatSuggestion4: "اگلے مہینے بل کیا ہوگا؟",
   },
 } as const;
 

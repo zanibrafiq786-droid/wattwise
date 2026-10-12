@@ -1,9 +1,11 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Badge } from "../components/Badge";
 import { Button } from "../components/Button";
 import { Card } from "../components/Card";
+import { Icon } from "../components/Icon";
 import { StateView } from "../components/StateView";
 import { setAlertStatus, useAlerts } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
@@ -19,6 +21,7 @@ export function AlertsScreen() {
   const { t } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
+  const navigation = useNavigation();
 
   useEffect(() => {
     ensureNotificationPermission();
@@ -40,7 +43,12 @@ export function AlertsScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <Text style={styles.title}>{t("alerts")}</Text>
+      <View style={styles.topRow}>
+        <Text style={styles.title}>{t("alerts")}</Text>
+        <Pressable onPress={() => navigation.goBack()} style={styles.closeButton}>
+          <Icon name="x" size={22} color={colors.text} />
+        </Pressable>
+      </View>
       <StateView
         loading={loading}
         error={error}
@@ -103,7 +111,15 @@ function AlertRow({ alert }: { alert: Alert }) {
 function makeStyles(colors: Colors) {
   return StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.bg },
-    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading, padding: spacing.md, paddingBottom: 0 },
+    topRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: spacing.md,
+      paddingBottom: 0,
+    },
+    closeButton: { padding: spacing.xs },
+    title: { color: colors.text, fontSize: 34, fontFamily: fonts.heading },
     list: { padding: spacing.md, gap: spacing.md },
     card: { gap: spacing.sm },
     rowTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },

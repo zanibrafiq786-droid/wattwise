@@ -55,6 +55,9 @@ export function LiveScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
+      <Pressable style={styles.chatFab} onPress={() => (navigation as any).navigate("Chat")}>
+        <Icon name="send" size={22} color="#FFFFFF" />
+      </Pressable>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.title} numberOfLines={1}>
@@ -177,6 +180,23 @@ function makeStyles(colors: Colors) {
       paddingHorizontal: 2,
     },
     bellBadgeText: { color: "#FFFFFF", fontSize: 10, fontFamily: fonts.bodySemiBold },
+    chatFab: {
+      position: "absolute",
+      right: spacing.md,
+      bottom: spacing.lg,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.primary,
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 50,
+      shadowColor: "#000",
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 6,
+    },
     presenceCard: { gap: spacing.md },
     presenceHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
     updated: { color: colors.textMuted, fontSize: 12 },

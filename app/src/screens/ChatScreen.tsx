@@ -1,3 +1,4 @@
+import { useNavigation } from "@react-navigation/native";
 import React, { useRef, useState } from "react";
 import {
   FlatList,
@@ -10,11 +11,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "../components/Button";
+import { Icon } from "../components/Icon";
 import { TextField } from "../components/TextField";
 import { useAuth } from "../lib/authContext";
 import { ChatMessage, clearChat, sendChatMessage, useChatMessages, usePendingTimeout } from "../lib/chat";
 import { useI18n } from "../lib/i18n";
-import { Colors, fonts, radius, spacing } from "../lib/theme";
+import { Colors, fonts, spacing } from "../lib/theme";
 import { useColors } from "../lib/themeContext";
 
 export function ChatScreen() {
@@ -22,15 +24,26 @@ export function ChatScreen() {
   const { t, language } = useI18n();
   const colors = useColors();
   const styles = makeStyles(colors);
+  const navigation = useNavigation();
   const uid = user?.uid ?? null;
   const { messages, pendingRequestId } = useChatMessages(uid);
   const offline = usePendingTimeout(pendingRequestId);
   const [input, setInput] = useState("");
   const listRef = useRef<FlatList>(null);
 
-  const defaultChips = [t("chatSuggestion1"), t("chatSuggestion2"), t("chatSuggestion3"), t("chatSuggestion4")];
+  const defaultQuestions = [t("chatSuggestion1"), t("chatSuggestion2"), t("chatSuggestion3")];
+  const lastMessage = messages[messages.length - 1];
+  const waitingForReply = lastMessage?.role === "user";
   const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
-  const chips = lastAssistant?.suggestions?.length ? lastAssistant.suggestions : defaultChips;
+  // Starter questions show before the first message; once a question is
+  // sent they disappear until the reply brings its own follow-ups, instead
+  // of staying on screen (and being tappable) while a reply is pending.
+  const questions =
+    messages.length === 0
+      ? defaultQuestions
+      : !waitingForReply && lastAssistant?.suggestions?.length
+        ? lastAssistant.suggestions
+        : [];
 
   function handleSend(text?: string) {
     const toSend = (text ?? input).trim();
@@ -45,9 +58,14 @@ export function ChatScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <View style={styles.topRow}>
           <Text style={styles.title}>{t("chatTitle")}</Text>
-          <Pressable onPress={() => uid && clearChat(uid)}>
-            <Text style={styles.clearLink}>{t("chatClear")}</Text>
-          </Pressable>
+          <View style={styles.topRowRight}>
+            <Pressable onPress={() => uid && clearChat(uid)}>
+              <Text style={styles.clearLink}>{t("chatClear")}</Text>
+            </Pressable>
+            <Pressable onPress={() => navigation.goBack()} style={styles.closeButton}>
+              <Icon name="x" size={22} color={colors.text} />
+            </Pressable>
+          </View>
         </View>
 
         {messages.length === 0 ? (
@@ -76,18 +94,22 @@ export function ChatScreen() {
           </View>
         )}
 
-        <FlatList
-          data={chips}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          keyExtractor={(c) => c}
-          contentContainerStyle={styles.chipsRow}
-          renderItem={({ item }) => (
-            <Pressable style={styles.chip} onPress={() => handleSend(item)}>
-              <Text style={styles.chipText}>{item}</Text>
+        {questions.length > 0 && (
+        <View style={styles.questionsList}>
+          {questions.slice(0, 3).map((q) => (
+            <Pressable
+              key={q}
+              onPress={() => handleSend(q)}
+              hitSlop={6}
+              style={({ pressed }) => [styles.questionPill, pressed && styles.questionPillPressed]}
+            >
+              <Text style={styles.questionText} numberOfLines={2}>
+                {q}
+              </Text>
             </Pressable>
-          )}
-        />
+          ))}
+        </View>
+        )}
 
         <View style={styles.inputRow}>
           <View style={{ flex: 1 }}>
@@ -123,6 +145,8 @@ function makeStyles(colors: Colors) {
       padding: spacing.md,
       paddingBottom: spacing.sm,
     },
+    topRowRight: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+    closeButton: { padding: spacing.xs },
     title: { color: colors.text, fontSize: 22, fontFamily: fonts.heading },
     clearLink: { color: colors.textMuted, fontSize: 13 },
     emptyWrap: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg },
@@ -131,7 +155,7 @@ function makeStyles(colors: Colors) {
     bubbleRow: { flexDirection: "row" },
     bubbleRowUser: { justifyContent: "flex-end" },
     bubbleRowAssistant: { justifyContent: "flex-start" },
-    bubble: { maxWidth: "80%", padding: spacing.sm, borderRadius: radius.md },
+    bubble: { maxWidth: "80%", padding: spacing.sm, borderRadius: 14 },
     bubbleUser: { backgroundColor: colors.primary, borderBottomRightRadius: 4 },
     bubbleAssistant: { backgroundColor: colors.surface, borderBottomLeftRadius: 4 },
     bubbleText: { color: colors.text, fontSize: 14, lineHeight: 20 },
@@ -141,21 +165,25 @@ function makeStyles(colors: Colors) {
       marginHorizontal: spacing.md,
       marginBottom: spacing.xs,
       padding: spacing.sm,
-      borderRadius: radius.sm,
+      borderRadius: 10,
       backgroundColor: colors.danger + "22",
     },
     offlineText: { color: colors.danger, fontSize: 12 },
-    chipsRow: { paddingHorizontal: spacing.md, gap: spacing.xs, paddingBottom: spacing.sm },
-    chip: {
+    // Each question is its own pill with real spacing between them, so a
+    // tap can't land on the wrong one.
+    questionsList: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm, gap: spacing.xs },
+    questionPill: {
+      alignSelf: "flex-start",
+      maxWidth: "90%",
       backgroundColor: colors.surfaceAlt,
       borderWidth: 1,
       borderColor: colors.border,
       borderRadius: 999,
-      paddingVertical: spacing.xs,
-      paddingHorizontal: spacing.sm,
-      marginRight: spacing.xs,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
     },
-    chipText: { color: colors.text, fontSize: 12 },
+    questionPillPressed: { backgroundColor: colors.border },
+    questionText: { color: colors.text, fontSize: 14 },
     inputRow: {
       flexDirection: "row",
       alignItems: "flex-end",

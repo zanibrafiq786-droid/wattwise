@@ -1,6 +1,19 @@
 # Progress Log
 
-Running log of what's been done, in order. Deadline: Monday Oct 12, 7 PM (Pakistan time).
+Running log of what's been done, in order. Deadline: Monday Oct 12, 7 PM (Pakistan time) -- **today**.
+
+## Branch note
+
+Everything from "Firebase Auth (multiuser)" onward is on the `multiuser` git branch, not `master`. `master` still has the pre-auth working app as a safe fallback (SETUP_WIZARD.md Section 0's "demo must not break" rule).
+
+## SETUP_WIZARD.md and CHATBOT_SOLAR.md status
+
+Two large new specs arrived mid-build, both bigger than the remaining time before the deadline:
+- **SETUP_WIZARD.md**: Step 1 (Auth) is done. Steps 2-5 (multi-user `/users/{uid}/...` data migration, the "Add a device" wizard, Firebase rules) are **not started** -- deprioritized by explicit choice in favor of the items below.
+- **CHATBOT_SOLAR.md**: Part A (chatbot) is done, verified end-to-end (see below). Part B (solar simulation) and Part C (satellite shadow mapping) are **not started**.
+- A "WattWise v2" visual redesign pack (`Version 2/`, gitignored) also arrived mid-build; its color/font/icon/shape language and a working Cream/Espresso theme toggle were adopted onto the existing screens (not the full multi-room redesign -- see below).
+
+If the deadline arrives before everything is done, what exists is a working single-room app (Auth, Live, Room, Chat, Alerts, Report, Setup) on the `multiuser` branch, plus `master` as an untouched fallback.
 
 ## Gate 0 — Scaffold + Firebase
 

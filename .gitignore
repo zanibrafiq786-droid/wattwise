@@ -74,3 +74,4 @@ videos/*/node_modules/
 videos/*/.hyperframes/
 videos/*/.thumbnails/
 videos/*/.waveform-cache/
+!media/WattWise-Demo.mp4

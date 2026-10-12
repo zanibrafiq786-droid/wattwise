@@ -7,6 +7,22 @@ chatbot, and a solar-worth-it estimate. Built for a "Power. Water. Heat." hackat
 `CLAUDE.md` for the full brief and `docs/progress.md` for a running log of what was built, in
 what order, and every scope tradeoff made along the way.
 
+## Try it
+
+| | |
+|---|---|
+| **Demo video (45 s)** | [media/WattWise-Demo.mp4](media/WattWise-Demo.mp4) -- open it and press *View raw* to play it in the browser |
+| **Android app (APK)** | [Download WattWise APK (version 6)](https://expo.dev/artifacts/eas/-Cajkix7IXWXYu39TXoiCZ284qgNbs9CDPkSKAjtYJQ.apk) |
+| **How the AI works** | [docs/ai-features.md](docs/ai-features.md) |
+
+**Installing the APK:** open the link on an Android phone, download, tap the file and choose
+*Install* (allow "install unknown apps" if asked). Sign up with any email. Chat, bill scanning
+and the solar advisor run on our cloud brain, so they work without any laptop. Live room
+readings appear only for the account linked to our ESP32 sensor.
+
+The demo video shows real screen recordings of the app; the gallery photos in the bill-scan
+step are blurred for privacy.
+
 ## Repo layout
 
 ```

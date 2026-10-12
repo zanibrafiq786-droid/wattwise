@@ -9,6 +9,7 @@ import { LiveScreen } from "./LiveScreen";
 import { ReportScreen } from "./ReportScreen";
 import { RoomScreen } from "./RoomScreen";
 import { SetupScreen } from "./SetupScreen";
+import { SolarScreen } from "./SolarScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -19,6 +20,7 @@ const TAB_ICONS: Record<string, IconName> = {
   Live: "home",
   Room: "cloud",
   Report: "chart",
+  Solar: "sun",
   Setup: "sliders",
 };
 
@@ -44,6 +46,7 @@ export function MainTabs() {
         <Tab.Screen name="Live" component={LiveScreen} options={{ tabBarLabel: t("tabLive") }} />
         <Tab.Screen name="Room" component={RoomScreen} options={{ tabBarLabel: t("tabRoom") }} />
         <Tab.Screen name="Report" component={ReportScreen} options={{ tabBarLabel: t("tabReport") }} />
+        <Tab.Screen name="Solar" component={SolarScreen} options={{ tabBarLabel: t("tabSolar") }} />
         <Tab.Screen name="Setup" component={SetupScreen} options={{ tabBarLabel: t("tabSetup") }} />
       </Tab.Navigator>
     </>

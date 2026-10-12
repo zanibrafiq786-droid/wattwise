@@ -28,6 +28,7 @@ from pathlib import Path
 
 from chat_context import build_context
 from firebase_db import get_app
+from solar_worker import poll_and_process_solar
 
 BRAIN_DIR = Path(__file__).parent
 load_dotenv(BRAIN_DIR / ".env")
@@ -117,7 +118,9 @@ def main():
     client = genai.Client(api_key=api_key)
 
     handled = set()
+    solar_handled = set()
     print(f"chat_worker.py running (model={MODEL}), polling every {POLL_SECONDS}s. Ctrl+C to stop.")
+    print("Also handling solar analysis requests (CHATBOT_SOLAR.md Part B) in the same loop.")
 
     while True:
         try:
@@ -134,6 +137,12 @@ def main():
                     handled.add(key)
         except Exception as e:
             print(f"Poll error: {e}")
+
+        try:
+            poll_and_process_solar(client, MODEL, solar_handled)
+        except Exception as e:
+            print(f"Solar poll error: {e}")
+
         time.sleep(POLL_SECONDS)
 
 

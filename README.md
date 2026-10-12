@@ -51,9 +51,11 @@ Create a free Realtime Database project at the Firebase console. The app needs t
 config (`app/.env`); the brain workers need a service account JSON (`brain/serviceAccountKey.json`,
 download from Project Settings > Service Accounts) and the database URL (`brain/.env`).
 Paste `database.rules.json` into Realtime Database > Rules: only signed-in users can read or
-write (the Python brain uses the service account, which bypasses rules). This is a minimum,
-not full per-user security -- any signed-in account can still read other paths. Tighten to
-per-user rules before real use.
+write, except `room1` and `alerts`, which stay writable without sign-in because the ESP32 posts
+to them directly over Wi-Fi with no login. (The Python brain uses the service account, which
+bypasses rules.) This is a minimum, not full security -- anyone could still post fake sensor
+data to those two paths, and any signed-in account can read other paths. Give the ESP32 its own
+credentials and per-user rules before real use.
 
 ### Cloud brain (Vercel) -- chat, bill scan and solar without the laptop
 
@@ -63,7 +65,9 @@ then calls this URL with the user's Firebase sign-in token; the function checks 
 does the job and writes the result back to Firebase. Deploy with `npx vercel deploy --prod`
 from the repo root after setting these Vercel environment variables: `GEMINI_API_KEY`,
 `GEMINI_MODEL`, `FIREBASE_DATABASE_URL`, `FIREBASE_SERVICE_ACCOUNT_JSON` (the whole JSON).
-The live room sensor still needs the laptop: the ESP32 sends data over USB to `brain/bridge.py`.
+The live room sensor doesn't need the laptop either: the ESP32 posts its readings straight to
+Firebase over Wi-Fi, so it only needs power (a USB phone charger is enough). The laptop is only
+used to run the month-end report (`python brain/report.py`) and `brain/accuracy.py`.
 
 ## What's real vs. simulated vs. estimated
 

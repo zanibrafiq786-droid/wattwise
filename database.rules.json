@@ -1,6 +1,8 @@
 {
   "rules": {
     ".read": "auth != null",
-    ".write": "auth != null"
+    ".write": "auth != null",
+    "room1": { ".write": true },
+    "alerts": { ".write": true }
   }
 }

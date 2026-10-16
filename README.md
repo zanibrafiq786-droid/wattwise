@@ -12,7 +12,7 @@ what order, and every scope tradeoff made along the way.
 | | |
 |---|---|
 | **Demo video (45 s)** | [media/WattWise-Demo.mp4](media/WattWise-Demo.mp4) -- open it and press *View raw* to play it in the browser |
-| **Android app (APK)** | [Download WattWise APK (version 6)](https://expo.dev/artifacts/eas/-Cajkix7IXWXYu39TXoiCZ284qgNbs9CDPkSKAjtYJQ.apk) |
+| **Android app (APK)** | [Download WattWise APK (version 7)](https://expo.dev/artifacts/eas/6pvMMfYZjApyzDcrXm_6tLlVKQnw6ilLvXuXXJxzbSU.apk) |
 | **Pitch deck** | [presentation/WattWise-Pitch-Deck.html](presentation/WattWise-Pitch-Deck.html) -- one self-contained file (images, fonts and animations built in): download it and open it in any browser. Arrow keys or click to move, `F` full screen, `A` autoplay |
 | **How the AI works** | [docs/ai-features.md](docs/ai-features.md) |
 

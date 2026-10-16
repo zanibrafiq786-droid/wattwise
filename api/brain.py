@@ -28,6 +28,7 @@ from bill_scan import process_scan  # noqa: E402
 from chat_worker import MODEL, process_request  # noqa: E402
 from firebase_db import get_app  # noqa: E402
 from solar_worker import process_solar_request  # noqa: E402
+from tariff import process_tariff  # noqa: E402
 
 # chat_context keeps "the current account" in a module global, so jobs that
 # land on the same running instance must take turns.
@@ -63,6 +64,12 @@ def run_job(uid: str, job: str, req_id: str) -> str:
             return "no such request"
         process_solar_request(_gemini(), MODEL, uid, req_id, req)
         return "solar done"
+    if job == "tariff":
+        req = db.reference(f"/users/{uid}/tariff/requests/{req_id}").get()
+        if not isinstance(req, dict):
+            return "no such request"
+        process_tariff(_gemini(), MODEL, uid, req_id, req)
+        return "tariff done"
     return "unknown job"
 
 
@@ -91,7 +98,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         job, req_id = body.get("job"), str(body.get("id") or "")
-        if job not in ("chat", "scan", "solar") or not req_id or "/" in req_id:
+        if job not in ("chat", "scan", "solar", "tariff") or not req_id or "/" in req_id:
             self._send(400, {"ok": False, "error": "bad request"})
             return
         try:

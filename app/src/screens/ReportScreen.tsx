@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Badge } from "../components/Badge";
 import { BillHistoryChart } from "../components/BillHistoryChart";
+import { BillCalculator } from "../components/BillCalculator";
 import { BillImportCard } from "../components/BillImportCard";
 import { Card } from "../components/Card";
 import { Expandable } from "../components/Expandable";
@@ -259,6 +260,11 @@ export function ReportScreen() {
             )}
           </Expandable>
         )}
+
+        {/* Dropdown: work out a bill from units, using the tariff the AI looked up. */}
+        <Expandable title={t("billCalcTitle")} subtitle={t("billCalcSub")} icon="coin">
+          <BillCalculator lastBill={reconcileBill} forecast={forecasts[0] ?? null} />
+        </Expandable>
       </ScrollView>
     </SafeAreaView>
   );

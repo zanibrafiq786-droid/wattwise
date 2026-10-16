@@ -8,7 +8,7 @@ import { auth } from "../../firebaseConfig";
 // secret key is needed in the app.
 const BRAIN_URL = process.env.EXPO_PUBLIC_BRAIN_URL || "https://wattwise-brain.vercel.app";
 
-export function runInCloud(job: "chat" | "scan" | "solar", id: string) {
+export function runInCloud(job: "chat" | "scan" | "solar" | "tariff", id: string) {
   const user = auth.currentUser;
   if (!user) return;
   user

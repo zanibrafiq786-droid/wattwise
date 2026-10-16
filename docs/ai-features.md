@@ -1,6 +1,6 @@
 # How WattWise uses AI
 
-WattWise helps a Pakistani household understand and cut its electricity bill. AI does five jobs
+WattWise helps a Pakistani household understand and cut its electricity bill. AI does six jobs
 in the app. The numbers always come from real data and fixed maths, and the AI's job is to
 **sense, read, explain and advise**. The AI never makes up a number.
 
@@ -28,6 +28,7 @@ in the app. The numbers always come from real data and fixed maths, and the AI's
 | 3 | AI assistant (chat) | Answers questions about your bill, grounded only in your own data | Cloud (Vercel) + Gemini |
 | 4 | Month-end report & plan | Explains where the waste came from and writes a next-month plan | Gemini (report job) |
 | 5 | Solar advisor | Picks the best solar option from simulated designs and explains it in plain language, using your region's rules | Cloud (Vercel) + Gemini |
+| 6 | Bill estimate | Looks up your area's tariff; our code then works out the bill for any units | Cloud (Vercel) + Gemini, maths in the app |
 
 The language model is **Google Gemini (gemini-3.5-flash-lite)**, with automatic fallback to
 another Gemini model if the first is busy.
@@ -148,6 +149,23 @@ only hear from salespeople. This gives an independent first answer based on thei
 location.
 
 ---
+
+## 6. Bill estimate: "what will my bill be?"
+
+**What it does:** In the Report screen, a dropdown (*Estimate my bill*) lets you type a number of
+units (or tap *Last bill* or *Next month's forecast*) and see the charge, broken down line by line:
+each slab of units, fuel adjustment, fixed charge and tax.
+
+**How the AI is used:**
+- **AI looks up the tariff, once.** Gemini is asked for the household tariff of your electricity
+  company/area (slab rates, whether blocks are charged separately or at one slab rate, fixed charge,
+  per-unit adjustment, tax percent). Our code checks it is sane (ascending slabs, plausible rates)
+  before saving it.
+- **The maths is not AI.** The app multiplies and adds those rates itself, so every line adds up and
+  any number of units gives an instant answer.
+- **Honest about accuracy.** The rates come from the AI's memory and tariffs change often, so the
+  screen shows the date the figures are from, the AI's own confidence, the result as a **range**, and
+  a check against your last real bill (*"this tariff gives Rs X; your bill said Rs Y"*).
 
 ## Smart alerts (AI output in action)
 

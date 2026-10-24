@@ -17,6 +17,9 @@ import {
   saveRssiThreshold,
   setAcOn,
   useAcOn,
+  effectiveLight,
+  setLightMode,
+  useLightMode,
   useAlerts,
   useBillHistory,
   useConfig,
@@ -62,6 +65,9 @@ export function LiveScreen() {
   const { state, loading: stateLoading, error } = useRoomState(device);
   const loading = deviceLoading || stateLoading;
   const { acOn: acOnRemote } = useAcOn(device);
+  // Light: the sensor, unless the user has set it by hand (Devices sheet).
+  const lightMode = useLightMode(device);
+  const lightOn = state ? effectiveLight(state.light_on, lightMode) : false;
   const { alerts } = useAlerts();
   const { config } = useConfig();
   const { events } = useRoomEvents(device, "real");
@@ -99,7 +105,7 @@ export function LiveScreen() {
   const derived = useMemo(() => {
     if (!state) return null;
     const onWatts =
-      (state.light_on ? config.watts.light : 0) + (state.fan_on ? config.watts.fan : 0) + (acOn ? config.watts.ac : 0);
+      (lightOn ? config.watts.light : 0) + (state.fan_on ? config.watts.fan : 0) + (acOn ? config.watts.ac : 0);
     const since = smart.since;
     let wastePerHour: number | null = null;
     let wasteSoFar: number | null = null;
@@ -110,13 +116,13 @@ export function LiveScreen() {
     const today = (events ?? []).filter((e) => e.ts >= startOfTodayMs());
     const todayWaste = computeWasteReport(today, config, null);
     return { onWatts, since, wastePerHour, wasteSoFar, todayWaste };
-  }, [state, acOn, config, events, smart.presence, smart.since]);
+  }, [state, lightOn, acOn, config, events, smart.presence, smart.since]);
 
   const bill = latestValidBill(bills);
 
   const devices: HeroDevice[] = state
     ? [
-        { key: "light", icon: "bulb", label: t("light"), watts: config.watts.light, on: state.light_on },
+        { key: "light", icon: "bulb", label: t("light"), watts: config.watts.light, on: lightOn },
         { key: "fan", icon: "fan", label: t("fan"), watts: config.watts.fan, on: state.fan_on },
         { key: "ac", icon: "ac", label: t("ac"), watts: config.watts.ac, on: acOn },
       ]
@@ -168,7 +174,7 @@ export function LiveScreen() {
                 roomName={t(room.label)}
                 imageOn={room.on}
                 imageOff={room.off}
-                lightOn={state.light_on}
+                lightOn={lightOn}
                 presence={smart.presence}
                 presenceLabel={t(PRESENCE_LABEL_KEY[smart.presence])}
                 presenceFor={derived.since ? durationSince(derived.since) : null}
@@ -181,7 +187,7 @@ export function LiveScreen() {
 
               {motionOpen ? (
                 <View style={{ gap: spacing.sm }}>
-                  <RoomLiveView state={state} presence={smart.presence} acOn={acOn} threshold={threshold} />
+                  <RoomLiveView state={{ ...state, light_on: lightOn }} presence={smart.presence} acOn={acOn} threshold={threshold} />
                   <Pressable style={styles.motionClose} onPress={() => setMotionOpen(false)}>
                     <Icon name="x" size={14} color={colors.textMuted} />
                     <Text style={styles.motionCloseText}>{t("wifiMotionHide")}</Text>
@@ -270,6 +276,9 @@ export function LiveScreen() {
                 roomName={t(room.label)}
                 state={state}
                 acOn={acOn}
+                lightMode={lightMode}
+                lightOn={lightOn}
+                onLightMode={(m) => device && setLightMode(device, m)}
                 acBusy={acBusy}
                 acError={acError}
                 onToggleAc={toggleAc}

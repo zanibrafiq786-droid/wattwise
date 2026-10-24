@@ -7,6 +7,7 @@ import { useI18n } from "../lib/i18n";
 import { useColors } from "../lib/themeContext";
 import { useAcLeftOnWatcher } from "../lib/useAcLeftOnWatcher";
 import { useAlertNotifications } from "../lib/useAlertNotifications";
+import { useLightLeftOnWatcher } from "../lib/useLightLeftOnWatcher";
 import { LiveScreen } from "./LiveScreen";
 import { ReportScreen } from "./ReportScreen";
 import { SetupScreen } from "./SetupScreen";
@@ -30,6 +31,7 @@ export function MainTabs() {
   // running no matter which tab is open.
   const { device } = useDevice();
   useAcLeftOnWatcher(device);
+  useLightLeftOnWatcher(device);
   // Phone notification for each new alert, whichever screen is open.
   useAlertNotifications();
   const { t } = useI18n();

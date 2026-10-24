@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LightMode } from "../lib/firebase";
 import { useI18n } from "../lib/i18n";
 import { ROOM_TYPES, RoomType } from "../lib/roomType";
 import { useWifiCalibration } from "../lib/smartPresence";
@@ -9,19 +10,25 @@ import { useColors } from "../lib/themeContext";
 import { timeAgo } from "../lib/time";
 import { RoomState } from "../lib/types";
 import { Icon, IconName } from "./Icon";
+import { Segmented } from "./Segmented";
 import { StatusMessage } from "./StatusMessage";
 import { Toggle } from "./Toggle";
 
-// Bottom sheet opened by tapping the Home hero card. Light and fan are
-// read-only here on purpose -- they come from real sensors, so the app
-// can't (and shouldn't pretend to) switch them. The AC has no sensor, so
-// its toggle is the user telling the app, same as before.
+// Bottom sheet opened by tapping the Home hero card. The fan is read-only
+// here on purpose -- it comes from a real sensor, so the app can't (and
+// shouldn't pretend to) switch it. The AC has no sensor, so its toggle is the
+// user telling the app. The light comes from the LDR (Auto), but can be set by
+// hand (On / Off) when the sensor can't be trusted or for a demo; the row then
+// says "Set by you (manual)" so it is never mistaken for a measurement.
 export function RoomSheet({
   visible,
   onClose,
   roomName,
   state,
   acOn,
+  lightMode,
+  lightOn,
+  onLightMode,
   acBusy,
   acError,
   onToggleAc,
@@ -35,6 +42,9 @@ export function RoomSheet({
   roomName: string;
   state: RoomState;
   acOn: boolean;
+  lightMode: LightMode; // "auto" = the LDR sensor, "on"/"off" = set by hand
+  lightOn: boolean; // the light status to show (manual choice, or the sensor)
+  onLightMode: (m: LightMode) => void;
   acBusy: boolean;
   acError: string | null;
   onToggleAc: (v: boolean) => void;
@@ -70,7 +80,23 @@ export function RoomSheet({
         <ScrollView contentContainerStyle={styles.body}>
           <Text style={styles.sectionTitle}>{t("devices")}</Text>
           <View style={styles.list}>
-            <DeviceRow icon="bulb" name={t("light")} source={t("sourceLightSensor")} on={state.light_on} />
+            <DeviceRow
+              icon="bulb"
+              name={t("light")}
+              source={lightMode === "auto" ? t("sourceLightSensor") : t("lightSourceManual")}
+              on={lightOn}
+              control={
+                <Segmented<LightMode>
+                  options={[
+                    { key: "auto", label: t("lightAuto") },
+                    { key: "on", label: t("on") },
+                    { key: "off", label: t("off") },
+                  ]}
+                  value={lightMode}
+                  onChange={onLightMode}
+                />
+              }
+            />
             <DeviceRow icon="fan" name={t("fan")} source={t("sourceVibrationSensor")} on={state.fan_on} />
             <DeviceRow
               icon="ac"

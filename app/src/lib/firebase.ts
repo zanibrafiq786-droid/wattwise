@@ -427,3 +427,48 @@ export function useProfilePhoto() {
 export async function saveProfilePhoto(dataUri: string | null) {
   await set(ref(db, userPath(currentUid(), "profile/photo")), dataUri);
 }
+
+// --- Manual light switch (demo / broken-sensor override) ---
+// The light normally comes from the LDR on the ESP32. If that sensor can't be
+// trusted (or for a demo), the user can set the light by hand in the app:
+// "on" or "off" replaces the sensor reading everywhere in the app; "auto"
+// (nothing stored) goes back to the sensor. It is always labelled "Manual" in
+// the UI, so it is never passed off as a real measurement.
+export type LightMode = "auto" | "on" | "off";
+
+export function setLightMode(room: string, mode: LightMode) {
+  return update(ref(db, `/${room}/state_user`), { light_override: mode === "auto" ? null : mode });
+}
+
+export function useLightMode(room: string | null = "room1") {
+  const [mode, setMode] = useState<LightMode>("auto");
+
+  useEffect(() => {
+    if (!room) {
+      setMode("auto");
+      return;
+    }
+    return onValue(ref(db, `/${room}/state_user/light_override`), (snap) => {
+      const v = snap.exists() ? String(snap.val()) : "auto";
+      setMode(v === "on" || v === "off" ? v : "auto");
+    });
+  }, [room]);
+
+  return mode;
+}
+
+// The light status the app should show: the manual choice if there is one, else the sensor.
+export function effectiveLight(sensorOn: boolean, mode: LightMode): boolean {
+  return mode === "auto" ? sensorOn : mode === "on";
+}
+
+export function createLightLeftOnAlert(room: string, rsPerHour: number) {
+  return push(ref(db, "/alerts"), {
+    ts: Date.now(),
+    room,
+    type: "light_left_on",
+    status: "new",
+    message: `Room is empty but the light is on. Turn it off to save about Rs ${rsPerHour.toFixed(1)} per hour.`,
+    wasted_rs_est: rsPerHour,
+  });
+}
